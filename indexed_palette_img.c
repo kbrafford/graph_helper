@@ -30,7 +30,7 @@ uint8_t _get_color_idx(indexed_palette_img_t *pimg, uint32_t c)
     }
 
     /* see if we need to make a new color */
-    if(!found)
+    if((!found)&&(pimg->next_color < 255))
     {
       pimg->palette[pimg->next_color] = c;
       pimg->_mrc = c;
