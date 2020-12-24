@@ -52,10 +52,10 @@ int main()
   pimg_bil = indexed_palette_img_resize(pimg, .5, 1);
   pimg_bic = indexed_palette_img_resize(pimg, .5, 2);
 
-  indexed_palette_img_save_png(pimg, "keith.png");
-  indexed_palette_img_save_png(pimg_nn, "keith_nn.png");
-  indexed_palette_img_save_png(pimg_bil, "keith_bil.png");
-  indexed_palette_img_save_png(pimg_bic, "keith_bic.png");
+  indexed_palette_img_save_png(pimg, "image.png");
+  indexed_palette_img_save_png(pimg_nn, "image_nn.png");
+  indexed_palette_img_save_png(pimg_bil, "image_bil.png");
+  indexed_palette_img_save_png(pimg_bic, "image_bic.png");
 
   indexed_palette_img_dump_stats(pimg, "Original");
   indexed_palette_img_dump_stats(pimg_nn, "Nearest Neighbor");
