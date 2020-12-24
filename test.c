@@ -12,9 +12,9 @@ int main()
 
   //indexed_palette_img_plot(pimg, 100, 100, RGB(0,0,255));
 
-  indexed_palette_img_plot_line(pimg, 0,0,IMG_X-1,IMG_Y-1, 2, RGB(0,0,255));
-  indexed_palette_img_plot_line(pimg, IMG_X-1,0,0,IMG_Y-1, 2, RGB(0,0,255));
-  indexed_palette_img_plot_vline(pimg, IMG_X/2-1, 5, IMG_Y-6, 6, RGB(128, 0, 200));
+  //indexed_palette_img_plot_line(pimg, 0,0,IMG_X-1,IMG_Y-1, 2, RGB(0,0,255));
+  //indexed_palette_img_plot_line(pimg, IMG_X-1,0,0,IMG_Y-1, 2, RGB(0,0,255));
+  //indexed_palette_img_plot_vline(pimg, IMG_X/2-1, 5, IMG_Y-6, 6, RGB(128, 0, 200));
 
   indexed_palette_img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4, RGB(255,0,25));
   indexed_palette_img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4-1, RGB(255,0,25));
@@ -22,7 +22,8 @@ int main()
   indexed_palette_img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4-2, RGB(255,0,25));
   indexed_palette_img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4+2, RGB(255,0,25));
 
-
+  indexed_palette_img_plot_line(pimg, IMG_X - 10, 5, 10, IMG_Y - 5, 2, RGB(0,0,0));
+  indexed_palette_img_plot_line_antialias(pimg, 10, 5, IMG_X - 10, IMG_Y - 5, RGB(0,0,0));
 
   //indexed_palette_img_plot_line(pimg, 200,200, 1280-200,200, 1, RGB(0,0,255));
   //indexed_palette_img_plot_line(pimg, 1280-200,200, 1280-200,720-200, 1, RGB(0,0,255));
