@@ -391,7 +391,7 @@ static uint32_t _SampleLinear (indexed_palette_img_t *pimg, float u, float v)
 
     _CLAMP(value, 0.0f, 255.0f);
 
-    ret.as_uint8[i] = (uint8_t)value & 0xFC;
+    ret.as_uint8[i] = (uint8_t)value & 0xF8;
   }
 
   return ret.as_uint32;
@@ -450,7 +450,7 @@ static uint32_t _SampleBicubic (indexed_palette_img_t *pimg, float u, float v)
         float col3 = _CubicHermite(p03.as_uint8[i], p13.as_uint8[i], p23.as_uint8[i], p33.as_uint8[i], xfract);
         float value = _CubicHermite(col0, col1, col2, col3, yfract);
         _CLAMP(value, 0.0f, 255.0f);
-        ret.as_uint8[i] = (uint8_t)value & 0xFC;
+        ret.as_uint8[i] = (uint8_t)value & 0xF8;
     }
     return ret.as_uint32;
 }
