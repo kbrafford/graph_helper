@@ -1,8 +1,8 @@
 #include "indexed_palette_img.h"
 #include <stdio.h>
 
-#define IMG_X 1000
-#define IMG_Y 3000
+#define IMG_X 1920*3
+#define IMG_Y 1080*3
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
   };
   const int pathsize = sizeof(path) / sizeof(path[0]);
 
-  indexed_palette_img_plot_path(pimg, &path[0], pathsize, 2, RGB(255,255,0));
+  indexed_palette_img_plot_path(pimg, &path[0], pathsize, 5, RGB(255,255,0));
 
   //indexed_palette_img_plot_vline(pimg, 300, 10, 710, 3, RGB(128, 0, 200));
 
@@ -49,9 +49,9 @@ int main()
 
   indexed_palette_img_t *pimg_nn, *pimg_bil, *pimg_bic;
 
-  pimg_nn  = indexed_palette_img_resize(pimg, .5, 0);
-  pimg_bil = indexed_palette_img_resize(pimg, .5, 1);
-  pimg_bic = indexed_palette_img_resize(pimg, .5, 2);
+  pimg_nn  = indexed_palette_img_resize(pimg, .33, 0);
+  pimg_bil = indexed_palette_img_resize(pimg, .33, 1);
+  pimg_bic = indexed_palette_img_resize(pimg, .33, 2);
 
   indexed_palette_img_save_png(pimg, "image.png");
   indexed_palette_img_save_png(pimg_nn, "image_nn.png");
