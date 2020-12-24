@@ -6,10 +6,14 @@
 #include "afibalert_if_miniz.h"
 #include "indexed_palette_img.h"
 #include <string.h>
+#include <math.h>
 
 uint8_t _get_color_idx(indexed_palette_img_t *pimg, uint32_t c)
 {
   int     i;
+  int     found = 0;
+
+  c &= 0xFFFFFF;
 
   if(c != pimg->_mrc)
   {
@@ -20,24 +24,25 @@ uint8_t _get_color_idx(indexed_palette_img_t *pimg, uint32_t c)
       {
         pimg->_mrc_idx = i;
         pimg->_mrc = c;
+        found = 1;
         break;
       }
     }
 
     /* see if we need to make a new color */
-    if(i == pimg->next_color)
+    if(!found)
     {
-      pimg->palette[pimg->next_color++] = c;
+      pimg->palette[pimg->next_color] = c;
       pimg->_mrc = c;
-      pimg->_mrc_idx = i;
+      pimg->_mrc_idx = pimg->next_color;
+      pimg->next_color++;
     }
   }
 
-  return pimg->_mrc_idx;  
-}
+  if(pimg->next_color == 255)
+    printf("we got too many colors!\n");
 
-void indexed_palette_img_init()
-{
+  return pimg->_mrc_idx;  
 }
 
 indexed_palette_img_t *indexed_palette_img_create(uint16_t width, uint16_t height, uint32_t c)
@@ -54,7 +59,7 @@ indexed_palette_img_t *indexed_palette_img_create(uint16_t width, uint16_t heigh
     pimg->width = width;
     pimg->height = height;
 
-    pimg->_mrc_idx = 0xFF;
+    pimg->_mrc_idx = 0;
     pimg->_mrc = 0xFFFFFFFF;
 
     pimg->data = (uint8_t *) malloc(width * height * sizeof(uint8_t));
@@ -68,7 +73,7 @@ indexed_palette_img_t *indexed_palette_img_create(uint16_t width, uint16_t heigh
     {
       /* pre-fill the image with the background color */
       color_idx = _get_color_idx(pimg, c);
-      printf("Color: 0x%06X, Color Index: %d\n", c, color_idx);
+      //printf("Color: 0x%06X, Color Index: %d\n", c, color_idx);
       memset(pimg->data, color_idx, width * height * sizeof(uint8_t));
     }
   }
@@ -218,10 +223,10 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
 
   if(pimg)
   {
-    printf("mallocing memory: %d bytes\n", pimg->width * pimg->height * 3); fflush(stdout);
+    //printf("mallocing memory: %d bytes\n", pimg->width * pimg->height * 3); fflush(stdout);
     uint8_t *expanded_image_buffer = (uint8_t*) malloc(pimg->width * pimg->height * 3);
 
-    printf("filling memory: %d by %d\n", pimg->width , pimg->height); fflush(stdout);
+    //printf("filling memory: %d by %d\n", pimg->width , pimg->height); fflush(stdout);
 
     for(y = 0; y < pimg->height; y++)    
     {
@@ -231,8 +236,8 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
 
         if(firsttime)
         {
-          printf("{Color: 0x%06X, r: %d, g: %d, b: %d}\n", c,
-                  GET_R(c), GET_G(c), GET_B(c)); fflush(stdout);
+          //printf("{Color: 0x%06X, r: %d, g: %d, b: %d}\n", c,
+          //        GET_R(c), GET_G(c), GET_B(c)); fflush(stdout);
            
           firsttime = 0;
         }
@@ -244,7 +249,7 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
       //printf("{out idx: %d}", output_idx); fflush(stdout);
     }
 
-    printf("Diving into PNG code\n"); fflush(stdout);
+    //printf("Diving into PNG code\n"); fflush(stdout);
 
     void *pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(expanded_image_buffer,
                              pimg->width, pimg->height, 3, &png_data_size, 6, MZ_FALSE);
@@ -259,20 +264,218 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
   return rc;
 }
 
-void indexed_palette_img_dump_stats(indexed_palette_img_t *pimg)
+void indexed_palette_img_dump_stats(indexed_palette_img_t *pimg, const char* title)
 {
   int i;
 
   if(pimg)
   {
-    printf("Width:  %d\n", pimg->width);
-    printf("Height: %d\n", pimg->height);
+    printf("%s, Width:  %d, ", title, pimg->width);
+    printf("Height: %d, ", pimg->height);
     printf("Color count: %d\n", pimg->next_color);
-    for(i = 0; i < 255; i++)
+    for(i = 0; i < 255; i+=4)
     {
       printf("% 3d: 0x%06X  0x%06X  0x%06X  0x%06X\n", i, 
           pimg->palette[i], pimg->palette[i+1],pimg->palette[i+2],pimg->palette[i+3]);
-      i += 4;
     }
   }
+}
+
+
+// t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across uniformly sampled data points.
+// when t is 0, this will return B.  When t is 1, this will return C.  Inbetween values will return an interpolation
+// between B and C.  A and B are used to calculate slopes at the edges.
+static float _CubicHermite (float A, float B, float C, float D, float t)
+{
+    float a = -A / 2.0f + (3.0f*B) / 2.0f - (3.0f*C) / 2.0f + D / 2.0f;
+    float b = A - (5.0f*B) / 2.0f + 2.0f*C - D / 2.0f;
+    float c = -A / 2.0f + C / 2.0f;
+    float d = B;
+ 
+    return a*t*t*t + b*t*t + c*t + d;
+}
+
+static float _Lerp (float A, float B, float t)
+{
+    return A * (1.0f - t) + B * t;
+}
+
+#define _CLAMP(v, min, max) if (v < min) { v = min; } else if (v > max) { v = max; } 
+
+static uint32_t _GetPixelClamped (indexed_palette_img_t *pimg, int x, int y)
+{
+  uint8_t color_idx;
+
+  _CLAMP(x, 0, pimg->width - 1);
+  _CLAMP(y, 0, pimg->height - 1);    
+
+  color_idx = pimg->data[y*pimg->width + x];
+
+  return pimg->palette[color_idx];
+}
+
+static uint32_t _SampleNearest (indexed_palette_img_t *pimg, float u, float v)
+{
+    // calculate coordinates
+    int xint = (int)(u * pimg->width);
+    int yint = (int)(v * pimg->height);
+ 
+    // return pixel
+    return _GetPixelClamped(pimg, xint, yint);
+}
+
+static uint32_t _SampleLinear (indexed_palette_img_t *pimg, float u, float v)
+{
+  int i;
+
+  typedef union _pixel_t
+  {
+    uint32_t as_uint32;
+    uint8_t  as_uint8[4];
+  } pixel_t;
+
+  float col0, col1, value;
+
+  // calculate coordinates -> also need to offset by half a pixel to keep image from shifting down and left half a pixel
+  float x = (u * pimg->width) - 0.5f;
+  int xint = (int)x;
+  float xfract = x - floor(x);
+ 
+  float y = (v * pimg->height) - 0.5f;
+  int yint = (int)y;
+  float yfract = y - floor(y);
+ 
+  // get pixels
+  pixel_t p00 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 0) };
+  pixel_t p10 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 0) };
+  pixel_t p01 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 1) };
+  pixel_t p11 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 1) };
+ 
+  //printf("p00: 0x%08X, p10: 0x%08X, p01: 0x%08X, p11: 0x%08X\n",
+  //  p00.as_uint32, p10.as_uint32, p01.as_uint32, p11.as_uint32);
+  //fflush(stdout);
+
+
+  // interpolate bi-linearly!
+  //uint8_t ret[3];
+  pixel_t ret;
+  for (i = 0; i < 3; i++)
+  {
+    col0  = _Lerp(p00.as_uint8[i], p10.as_uint8[i], xfract);
+    col1  = _Lerp(p01.as_uint8[i], p11.as_uint8[i], xfract);
+    value = _Lerp(col0, col1, yfract);
+
+    _CLAMP(value, 0.0f, 255.0f);
+
+    ret.as_uint8[i] = (uint8_t)value & 0xFC;
+    //ret[i] = (uint8_t)value;
+  }
+ 
+  //printf("ret0: 0x%02X,ret1: 0x%02X,ret2: 0x%02X\n", ret[0], ret[1], ret[2]);
+  //fflush(stdout);
+  //exit(1);
+
+  //return RGB(ret[2], ret[1], ret[0]);
+  return ret.as_uint32;
+}
+
+
+static uint32_t _SampleBicubic (indexed_palette_img_t *pimg, float u, float v)
+{
+  typedef union _pixel_t
+  {
+    uint32_t as_uint32;
+    uint8_t  as_uint8[4];
+  } pixel_t;
+
+    // calculate coordinates -> also need to offset by half a pixel to keep image from shifting down and left half a pixel
+    float x = (u * pimg->width) - 0.5;
+    int xint = (int)x;
+    float xfract = x - floor(x);
+ 
+    float y = (v * pimg->height) - 0.5;
+    int yint = (int)y;
+    float yfract = y - floor(y);
+ 
+    // 1st row
+    pixel_t p00 = { .as_uint32 = _GetPixelClamped(pimg, xint - 1, yint - 1) };
+    pixel_t p10 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint - 1) };
+    pixel_t p20 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint - 1) };
+    pixel_t p30 = { .as_uint32 = _GetPixelClamped(pimg, xint + 2, yint - 1) };
+ 
+    // 2nd row
+    pixel_t p01 = { .as_uint32 = _GetPixelClamped(pimg, xint - 1, yint + 0) };
+    pixel_t p11 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 0) };
+    pixel_t p21 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 0) };
+    pixel_t p31 = { .as_uint32 = _GetPixelClamped(pimg, xint + 2, yint + 0) };
+ 
+    // 3rd row
+    pixel_t p02 = { .as_uint32 = _GetPixelClamped(pimg, xint - 1, yint + 1) };
+    pixel_t p12 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 1) };
+    pixel_t p22 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 1) };
+    pixel_t p32 = { .as_uint32 = _GetPixelClamped(pimg, xint + 2, yint + 1) };
+ 
+    // 4th row
+    pixel_t p03 = { .as_uint32 = _GetPixelClamped(pimg, xint - 1, yint + 2) };
+    pixel_t p13 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 2) };
+    pixel_t p23 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 2) };
+    pixel_t p33 = { .as_uint32 = _GetPixelClamped(pimg, xint + 2, yint + 2) };
+ 
+    // interpolate bi-cubically!
+    // Clamp the values since the curve can put the value below 0 or above 255
+    pixel_t ret;
+    for (int i = 0; i < 3; ++i)
+    {
+        float col0 = _CubicHermite(p00.as_uint8[i], p10.as_uint8[i], p20.as_uint8[i], p30.as_uint8[i], xfract);
+        float col1 = _CubicHermite(p01.as_uint8[i], p11.as_uint8[i], p21.as_uint8[i], p31.as_uint8[i], xfract);
+        float col2 = _CubicHermite(p02.as_uint8[i], p12.as_uint8[i], p22.as_uint8[i], p32.as_uint8[i], xfract);
+        float col3 = _CubicHermite(p03.as_uint8[i], p13.as_uint8[i], p23.as_uint8[i], p33.as_uint8[i], xfract);
+        float value = _CubicHermite(col0, col1, col2, col3, yfract);
+        _CLAMP(value, 0.0f, 255.0f);
+        ret.as_uint8[i] = (uint8_t)value & 0xFC;
+    }
+    return ret.as_uint32;
+}
+
+
+indexed_palette_img_t *indexed_palette_img_resize (indexed_palette_img_t *psrc_img, float scale, int degree)
+{
+  indexed_palette_img_t *pdst_img;
+  int                    x,y;
+  uint32_t               sample;
+  float                  u,v;
+
+  /* first, make the new image. We'll copy the background color from the
+     source image, even though it should be overwritten by pixel plots.
+     And we assume that the zeroth color in the image palette is also the
+     background color */
+  uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
+  uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
+
+  pdst_img = indexed_palette_img_create(width, height, psrc_img->palette[0]);
+
+  //printf("new image:\n");
+  //indexed_palette_img_dump_stats(pdst_img);
+  //fflush(stdout);
+
+  for (y = 0; y < pdst_img->height; y++)
+  {
+    v = ((float)y) / (float)(pdst_img->height - 1);
+
+    for (x = 0; x < pdst_img->width; x++)
+    {
+      u = ((float)x) / (float)(pdst_img->width - 1);
+ 
+      if (degree == 0)
+        sample = _SampleNearest(psrc_img, u, v);
+      else if (degree == 1)
+        sample = _SampleLinear(psrc_img, u, v);
+      else if (degree == 2)
+        sample = _SampleBicubic(psrc_img, u, v);
+
+      indexed_palette_img_plot(pdst_img, x, y, sample & 0x00FFFFFF);
+    }
+  }
+
+  return pdst_img;
 }

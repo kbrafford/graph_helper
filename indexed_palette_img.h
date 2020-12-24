@@ -22,7 +22,7 @@ typedef struct _img_point_t
   uint16_t y;
 } img_point_t;
 
-void indexed_palette_img_init(void);
+
 indexed_palette_img_t *indexed_palette_img_create(uint16_t width, uint16_t height, uint32_t c);
 void indexed_palette_img_destroy(indexed_palette_img_t *pimg);
 
@@ -41,6 +41,10 @@ void indexed_palette_img_plot_hline(indexed_palette_img_t *pimg, int32_t x0, int
 void indexed_palette_img_plot_path(indexed_palette_img_t *pimg, img_point_t *ppath, 
                                    uint16_t count, uint8_t t, uint32_t c);
 
+indexed_palette_img_t *indexed_palette_img_resize (indexed_palette_img_t *psrc_img, 
+                                                    float scale, int degree);
+
 uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *fname);
-void indexed_palette_img_dump_stats(indexed_palette_img_t *pimg);
+void indexed_palette_img_dump_stats(indexed_palette_img_t *pimg, const char* title);
+
 #endif
