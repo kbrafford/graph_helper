@@ -258,14 +258,10 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
   uint32_t output_idx = 0;
   size_t   png_data_size = 0;
   FILE     *fp;
-  static int firsttime = 1;
 
   if(pimg)
   {
-    //printf("mallocing memory: %d bytes\n", pimg->width * pimg->height * 3); fflush(stdout);
     uint8_t *expanded_image_buffer = (uint8_t*) malloc(pimg->width * pimg->height * 3);
-
-    //printf("filling memory: %d by %d\n", pimg->width , pimg->height); fflush(stdout);
 
     for(y = 0; y < pimg->height; y++)    
     {
@@ -273,22 +269,11 @@ uint32_t indexed_palette_img_save_png(indexed_palette_img_t *pimg, const char *f
       {
         c = pimg->palette[pimg->data[input_idx++]];
 
-        if(firsttime)
-        {
-          //printf("{Color: 0x%06X, r: %d, g: %d, b: %d}\n", c,
-          //        GET_R(c), GET_G(c), GET_B(c)); fflush(stdout);
-           
-          firsttime = 0;
-        }
-
         expanded_image_buffer[output_idx++] = GET_R(c);
         expanded_image_buffer[output_idx++] = GET_G(c);
         expanded_image_buffer[output_idx++] = GET_B(c);                
       }
-      //printf("{out idx: %d}", output_idx); fflush(stdout);
     }
-
-    //printf("Diving into PNG code\n"); fflush(stdout);
 
     void *pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(expanded_image_buffer,
                              pimg->width, pimg->height, 3, &png_data_size, 6, MZ_FALSE);
