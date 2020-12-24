@@ -1,4 +1,4 @@
-#include "afibalert_if_miniz.h"
+#include "miniz.h"
 /**************************************************************************
  *
  * Copyright 2013-2014 RAD Game Tools and Valve Software

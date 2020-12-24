@@ -1,12 +1,13 @@
 
-//#define MINIZ_NO_STDIO
+#define MINIZ_NO_STDIO
 #define MINIZ_NO_TIME
 #define MINIZ_NO_ZLIB_APIS
 
-#include "afibalert_if_miniz.h"
-#include "indexed_palette_img.h"
 #include <string.h>
 #include <math.h>
+
+#include "miniz.h"
+#include "indexed_palette_img.h"
 
 uint8_t _get_color_idx(indexed_palette_img_t *pimg, uint32_t c)
 {
