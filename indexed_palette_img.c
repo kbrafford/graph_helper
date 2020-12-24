@@ -103,7 +103,7 @@ void indexed_palette_img_plot(indexed_palette_img_t *pimg, uint16_t x, uint16_t 
 }
 
 
-void indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t c)
+static void _indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t c)
 {
   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
   int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
@@ -119,16 +119,22 @@ void indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int3
 }
 
 
-void indexed_palette_img_plot_thick_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, 
+void indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, 
                                          uint8_t t, uint32_t c)
 {
-  int i,j;
+  int i, j, start, end;
   
-  for(i = 0; i < t;i++)
-    for(j = 0; j < t; j++)
-    {
-      indexed_palette_img_plot_line(pimg, x0+j, y0+i, x1+j, y1+i, c);
-    }
+  start = t&1 ? -(t+1)/2 + 1 : -t/2 + 1;
+  end = start + t;
+
+  if(t)
+  {
+    for(i = start; i < end; i++)
+      for(j = start; j < end; j++)
+      {
+        _indexed_palette_img_plot_line(pimg, x0+j, y0+i, x1+j, y1+i, c);
+      }
+  }
 }
 
 
@@ -136,12 +142,15 @@ void indexed_palette_img_plot_thick_line(indexed_palette_img_t *pimg, int32_t x0
 void indexed_palette_img_plot_vline(indexed_palette_img_t *pimg, int32_t x, 
                                     int32_t y0, int32_t y1, uint8_t t, uint32_t c)
 {
-  int i;
+  int i, start, end;
+  
+  start = t&1 ? -(t+1)/2 + 1 : -t/2 + 1;
+  end = start + t;
 
   if(pimg)
   {
-    for(i = 0; i < t; i++)
-      indexed_palette_img_plot_line(pimg, x+i, y0, x+i, y1, c);
+    for(i = start; i < end; i++)
+      indexed_palette_img_plot_line(pimg, x+i, y0, x+i, y1, 1, c);
   }
 }
 
@@ -149,19 +158,22 @@ void indexed_palette_img_plot_vline(indexed_palette_img_t *pimg, int32_t x,
 void indexed_palette_img_plot_hline(indexed_palette_img_t *pimg, int32_t x0, int32_t x1, 
                                     int32_t y, uint8_t t, uint32_t c)
 {
-  int i;
+  int i, start, end;
+  
+  start = t&1 ? -(t+1)/2 + 1 : -t/2 + 1;
+  end = start + t;
 
   if(pimg)
   {
-    for(i = 0; i < t; i++)
-      indexed_palette_img_plot_line(pimg, x0, y+i, x1, y+i, c);
+    for(i = start; i < end; i++)
+      indexed_palette_img_plot_line(pimg, x0, y+i, x1, y+i, 1, c);
   }
 }
 
 
 
 void indexed_palette_img_plot_path(indexed_palette_img_t *pimg, img_point_t *ppath, 
-                                   uint16_t count, uint32_t c)
+                                   uint16_t count, uint8_t t, uint32_t c)
 {
   int i;
   uint16_t x, y;
@@ -175,7 +187,7 @@ void indexed_palette_img_plot_path(indexed_palette_img_t *pimg, img_point_t *ppa
 
       for(i = 1; i < count; i++)
       {
-        indexed_palette_img_plot_line(pimg, x, y, ppath[i].x, ppath[i].y, c);
+        indexed_palette_img_plot_line(pimg, x, y, ppath[i].x, ppath[i].y, t, c);
         x = ppath[i].x;
         y = ppath[i].y;
       }
