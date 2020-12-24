@@ -32,6 +32,9 @@ void indexed_palette_img_plot(indexed_palette_img_t *pimg,
 void indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0,
                                    int32_t x1, int32_t y1, uint8_t t, uint32_t c);
 
+void indexed_palette_img_plot_circle(indexed_palette_img_t *pimg, 
+                                     uint16_t x0, uint16_t y0, uint16_t radius, uint32_t c);
+
 void indexed_palette_img_plot_vline(indexed_palette_img_t *pimg, int32_t x, 
                                     int32_t y0, int32_t y1, uint8_t t, uint32_t c);
 

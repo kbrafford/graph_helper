@@ -109,6 +109,44 @@ void indexed_palette_img_plot(indexed_palette_img_t *pimg, uint16_t x, uint16_t 
 }
 
 
+ 
+void indexed_palette_img_plot_circle(indexed_palette_img_t *pimg, 
+                                     uint16_t x0, uint16_t y0, uint16_t radius, uint32_t c)
+{
+    int f = 1 - radius;
+    int ddF_x = 0;
+    int ddF_y = -2 * radius;
+    int x = 0;
+    int y = radius;
+ 
+    indexed_palette_img_plot(pimg, x0, y0 + radius, c);
+    indexed_palette_img_plot(pimg, x0, y0 - radius, c);
+    indexed_palette_img_plot(pimg, x0 + radius, y0, c);
+    indexed_palette_img_plot(pimg, x0 - radius, y0, c);
+ 
+    while(x < y) 
+    {
+        if(f >= 0) 
+        {
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x + 1;    
+        indexed_palette_img_plot(pimg, x0 + x, y0 + y, c);
+        indexed_palette_img_plot(pimg, x0 - x, y0 + y, c);
+        indexed_palette_img_plot(pimg, x0 + x, y0 - y, c);
+        indexed_palette_img_plot(pimg, x0 - x, y0 - y, c);
+        indexed_palette_img_plot(pimg, x0 + y, y0 + x, c);
+        indexed_palette_img_plot(pimg, x0 - y, y0 + x, c);
+        indexed_palette_img_plot(pimg, x0 + y, y0 - x, c);
+        indexed_palette_img_plot(pimg, x0 - y, y0 - x, c);
+    }
+}
+
+
 static void _indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t c)
 {
   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
