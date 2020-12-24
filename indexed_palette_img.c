@@ -110,6 +110,8 @@ void indexed_palette_img_plot(indexed_palette_img_t *pimg, uint16_t x, uint16_t 
 
 
  
+// From: https://rosettacode.org/wiki/Bitmap/Midpoint_circle_algorithm#C 
+
 void indexed_palette_img_plot_circle(indexed_palette_img_t *pimg, 
                                      uint16_t x0, uint16_t y0, uint16_t radius, uint32_t c)
 {
@@ -146,8 +148,10 @@ void indexed_palette_img_plot_circle(indexed_palette_img_t *pimg,
     }
 }
 
+// From: https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
 
-static void _indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint32_t c)
+static void _indexed_palette_img_plot_line(indexed_palette_img_t *pimg, int32_t x0, int32_t y0,
+                                           int32_t x1, int32_t y1, uint32_t c)
 {
   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
   int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
@@ -243,7 +247,7 @@ void indexed_palette_img_plot_path(indexed_palette_img_t *pimg, img_point_t *ppa
 
 
 
-
+// PNG saving, courtest of miniz: https://github.com/richgel999/miniz
 
 #define GET_R(c) (((c) & 0xFF0000) >> 16)
 #define GET_G(c) (((c) & 0x00FF00) >> 8)
@@ -306,6 +310,8 @@ void indexed_palette_img_dump_stats(indexed_palette_img_t *pimg, const char* tit
 }
 
 
+// FROM: https://blog.demofox.org/2015/08/15/resizing-images-with-bicubic-interpolation/
+
 // t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across uniformly sampled data points.
 // when t is 0, this will return B.  When t is 1, this will return C.  Inbetween values will return an interpolation
 // between B and C.  A and B are used to calculate slopes at the edges.
@@ -351,7 +357,7 @@ static uint32_t _SampleNearest (indexed_palette_img_t *pimg, float u, float v)
 static uint32_t _SampleLinear (indexed_palette_img_t *pimg, float u, float v)
 {
   int i;
-
+ 
   typedef union _pixel_t
   {
     uint32_t as_uint32;
@@ -375,13 +381,7 @@ static uint32_t _SampleLinear (indexed_palette_img_t *pimg, float u, float v)
   pixel_t p01 = { .as_uint32 = _GetPixelClamped(pimg, xint + 0, yint + 1) };
   pixel_t p11 = { .as_uint32 = _GetPixelClamped(pimg, xint + 1, yint + 1) };
  
-  //printf("p00: 0x%08X, p10: 0x%08X, p01: 0x%08X, p11: 0x%08X\n",
-  //  p00.as_uint32, p10.as_uint32, p01.as_uint32, p11.as_uint32);
-  //fflush(stdout);
-
-
   // interpolate bi-linearly!
-  //uint8_t ret[3];
   pixel_t ret;
   for (i = 0; i < 3; i++)
   {
@@ -392,14 +392,8 @@ static uint32_t _SampleLinear (indexed_palette_img_t *pimg, float u, float v)
     _CLAMP(value, 0.0f, 255.0f);
 
     ret.as_uint8[i] = (uint8_t)value & 0xFC;
-    //ret[i] = (uint8_t)value;
   }
- 
-  //printf("ret0: 0x%02X,ret1: 0x%02X,ret2: 0x%02X\n", ret[0], ret[1], ret[2]);
-  //fflush(stdout);
-  //exit(1);
 
-  //return RGB(ret[2], ret[1], ret[0]);
   return ret.as_uint32;
 }
 
@@ -477,10 +471,6 @@ indexed_palette_img_t *indexed_palette_img_resize (indexed_palette_img_t *psrc_i
   uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
 
   pdst_img = indexed_palette_img_create(width, height, psrc_img->palette[0]);
-
-  //printf("new image:\n");
-  //indexed_palette_img_dump_stats(pdst_img);
-  //fflush(stdout);
 
   for (y = 0; y < pdst_img->height; y++)
   {
