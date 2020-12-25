@@ -6,10 +6,11 @@
 
 typedef struct _indexed_palette_extra_t
 {
-  uint32_t palette[256];
+  uint32_t palette[4096];
   uint32_t _mrc;
   uint8_t  next_color;
   uint8_t  _mrc_idx;  
+  uint16_t palette_max_size;  
 } indexed_palette_extra_t;
 
 

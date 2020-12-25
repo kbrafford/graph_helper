@@ -19,8 +19,10 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
 
   switch(type)
   {
-    case img_type_indexed_palette:
-      ret->img_type = img_type_indexed_palette;
+    case img_type_indexed_palette255:
+    case img_type_indexed_palette15:
+    case img_type_indexed_palette4095:
+      ret->img_type = type;
       ret->width = width;
       ret->height = height;
       ret->extra = (void*) indexed_palette_img_create(ret, c);
@@ -29,7 +31,7 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
     break;
 
     case img_type_p565:
-      ret->img_type = img_type_p565;
+      ret->img_type = type;
       ret->width = width;
       ret->height = height;
       ret->extra = (void*) p565_img_create(ret, c);
@@ -360,7 +362,7 @@ static uint32_t _SampleBicubic (img_t *pimg, float u, float v)
 }
 
 
-img_t *img_resize (img_t *psrc_img, float scale, int degree)
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree)
 {
   img_t      *pdst_img;
   int         x,y;
@@ -370,7 +372,7 @@ img_t *img_resize (img_t *psrc_img, float scale, int degree)
   uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
   uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
 
-  pdst_img = img_create(psrc_img->img_type, width, height, RGB(0,0,0));
+  pdst_img = img_create(new_type, width, height, RGB(0,0,0));
 
   for (y = 0; y < pdst_img->height; y++)
   {

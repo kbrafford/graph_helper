@@ -12,8 +12,10 @@
 
 typedef enum _img_type
 {
-  img_type_indexed_palette = 0,
-  img_type_p565,
+  img_type_indexed_palette255   = 0,
+  img_type_indexed_palette15    = 1,
+  img_type_indexed_palette4095  = 2,
+  img_type_p565                 = 3,
 } img_type_t;
 
 
@@ -48,7 +50,7 @@ void img_plot_circle(img_t *pimg, uint16_t x0, uint16_t y0, uint16_t radius, uin
 void img_plot_vline(img_t *pimg, int32_t x, int32_t y0, int32_t y1, uint8_t t, uint32_t c);
 void img_plot_hline(img_t *pimg, int32_t x0, int32_t x1, int32_t y, uint8_t t, uint32_t c);
 void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, uint32_t c);
-img_t *img_resize (img_t *psrc_img, float scale, int degree);
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree);
 uint32_t img_save_png(img_t *pimg, const char *fname);
 void img_dump_stats(img_t *pimg, const char* title);
 #endif
