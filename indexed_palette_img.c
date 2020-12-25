@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -50,7 +49,6 @@ indexed_palette_extra_t *indexed_palette_img_create(img_t *pimg, uint32_t c)
   indexed_palette_extra_t *pextra;
   uint8_t                  color_idx;
 
-  printf("mallocing extra data...\n"); fflush(stdout);
   pextra = (indexed_palette_extra_t *) malloc(sizeof(indexed_palette_extra_t));
 
   if(pextra)
@@ -62,22 +60,17 @@ indexed_palette_extra_t *indexed_palette_img_create(img_t *pimg, uint32_t c)
     pextra->_mrc_idx = 0;
     pextra->_mrc = 0xFFFFFFFF;
 
-    printf("mallocing actual data...\n"); fflush(stdout);
     pimg->data = (uint8_t *) malloc(pimg->width * pimg->height * sizeof(uint8_t));
 
     if(!pimg->data)
     {
-      printf("failed 1...\n"); fflush(stdout);
       free(pextra);
       pextra = NULL;
     }
     else
     {
-      printf("doing color shit...\n"); fflush(stdout);
-
       /* pre-fill the image with the background color */
       color_idx = _get_color_idx(pimg, c);
-      //printf("Color: 0x%06X, Color Index: %d\n", c, color_idx);
       memset(pimg->data, color_idx, pimg->width * pimg->height * sizeof(uint8_t));
     }
   }
@@ -87,8 +80,6 @@ indexed_palette_extra_t *indexed_palette_img_create(img_t *pimg, uint32_t c)
 
 void indexed_palette_img_destroy(img_t *pimg)
 {
-  printf("made it here...\n"); fflush(stdout);
-
   if(pimg)
   {
     if(pimg->data)

@@ -15,18 +15,14 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
 {
   img_t *ret;
 
-  printf("mallocing img data...\n"); fflush(stdout);
-
   ret = (img_t*) malloc(sizeof(img_t));
 
-  printf("entering switch...\n"); fflush(stdout);
   switch(type)
   {
     case img_type_indexed_palette:
       ret->img_type = img_type_indexed_palette;
       ret->width = width;
       ret->height = height;
-
       ret->extra = (void*) indexed_palette_img_create(ret, c);
 
       indexed_palette_img_fill_vtable(ret);
