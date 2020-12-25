@@ -3,6 +3,22 @@
 
 #include "p565_img.h"
 
+static const uint8_t _LUT5[32] = 
+{
+  0, 8, 16, 24, 32, 41, 49, 57, 65, 74, 82, 90, 98, 106,
+  115, 123, 131, 139, 148, 156, 164, 172, 180, 189, 197,
+  205, 213, 222, 230, 238, 246, 255
+};
+
+static const uint8_t _LUT6[64] =
+{
+ 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 68, 72, 76, 80,
+ 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 129, 133, 137, 141, 145, 149,
+ 153, 157, 161, 165, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 214,
+ 218, 222, 226, 230, 234, 238, 242, 246, 250, 255
+};
+
+
 static p565_pixel_t _color2p565(uint32_t c)
 {
   p565_pixel_t ret;
@@ -89,7 +105,7 @@ uint32_t p565_img_getpixelclamped (img_t *pimg, uint16_t x, uint16_t y)
 
   pel = data[y*pimg->width + x];
 
-  return RGB((pel.r <<3), (pel.g << 2), (pel.b << 3));
+  return RGB(_LUT5[(pel.r)], _LUT6[(pel.g)], _LUT5[(pel.b)]);
 }
 
 void p565_img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
