@@ -18,6 +18,15 @@ static const uint8_t _LUT6[64] =
  218, 222, 226, 230, 234, 238, 242, 246, 250, 255
 };
 
+static const uint8_t _LUT3[8] = 
+{
+  0, 36, 72, 109, 145, 182, 218, 255
+};
+
+static const uint8_t _LUT2[4] = 
+{
+  0, 85, 170, 255
+};
 
 static p565_pixel_t _color2p565(uint32_t c)
 {
