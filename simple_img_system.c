@@ -45,10 +45,7 @@ void img_destroy(img_t *pimg)
 {
   if(pimg)
   {
-    printf("in destroy...\n"); fflush(stdout);
     pimg->destroy_func(pimg);
-    printf("out of destroy...\n"); fflush(stdout);
-
   }
 }
 

@@ -4,6 +4,9 @@
 #define IMG_X 1920
 #define IMG_Y 1080
 
+/* PICK WHICH STYLE OF IMAGE YOU WANT */
+/* Note that if you use indexed_palette, you will run out of colors fast
+   if drawing a lot of different things */
 img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette;
 
@@ -51,17 +54,17 @@ int main()
 
   img_t *pimg_nn, *pimg_bil, *pimg_bic;
 
-  pimg_nn  = img_resize(pimg, .67, 0);
-  pimg_bil = img_resize(pimg, .67, 1);
-  pimg_bic = img_resize(pimg, .67, 2);
+  pimg_nn  = img_resize(pimg, .33, 0);
+  pimg_bil = img_resize(pimg, .33, 1);
+  pimg_bic = img_resize(pimg, .33, 2);
 
   img_save_png(pimg, "image.png");
   img_save_png(pimg_nn, "image_nn.png");
   img_save_png(pimg_bil, "image_bil.png");
   img_save_png(pimg_bic, "image_bic.png");
 
-  img_dump_stats(pimg, "Original");
-  img_dump_stats(pimg_nn, "Nearest Neighbor");
+  img_dump_stats(pimg,     "Original");
+  img_dump_stats(pimg_nn,  "Nearest Neighbor");
   img_dump_stats(pimg_bil, "Bilinear");
   img_dump_stats(pimg_bic, "Bicubic");
 

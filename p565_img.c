@@ -75,7 +75,7 @@ void p565_img_dump_stats(img_t *pimg, const char* title)
   if(pimg)
   {
     printf("%s, Width:  %d, ", title, pimg->width);
-    printf("Height: %d, ", pimg->height);
+    printf("Height: %d\n", pimg->height);
   }
 }
 
