@@ -1,5 +1,5 @@
-test.exe: test.c miniz.c indexed_palette_img.c
-	gcc -O3 -o test.exe test.c miniz.c indexed_palette_img.c
+test.exe: test.c miniz.c indexed_palette_img.c simple_img_system.c
+	gcc -O3 -o test.exe test.c miniz.c indexed_palette_img.c simple_img_system.c
 
 clean:
 	erase test.exe
