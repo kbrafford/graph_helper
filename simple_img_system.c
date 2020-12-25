@@ -9,6 +9,7 @@
 
 #include "simple_img_system.h"
 #include "indexed_palette_img.h"
+#include "p565_img.h"
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
 {
@@ -26,10 +27,18 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
       ret->width = width;
       ret->height = height;
 
-      printf("mallocing extra data...\n"); fflush(stdout);
       ret->extra = (void*) indexed_palette_img_create(ret, c);
 
       indexed_palette_img_fill_vtable(ret);
+    break;
+
+    case img_type_p565:
+      ret->img_type = img_type_p565;
+      ret->width = width;
+      ret->height = height;
+      ret->extra = (void*) p565_img_create(ret, c);
+
+      p565_img_fill_vtable(ret);
     break;
   }
 
