@@ -253,6 +253,7 @@ void img_dump_stats(img_t *pimg, const char* title)
 }
 
 
+
 // FROM: https://blog.demofox.org/2015/08/15/resizing-images-with-bicubic-interpolation/
 
 // t is a value that goes from 0 to 1 to interpolate in a C1 continuous way across uniformly sampled data points.
@@ -556,3 +557,18 @@ void img_plot_line_antialias(img_t *pimg, unsigned int x1, unsigned int y1,
 #undef round_
 #undef rfpart_
 
+void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd, 
+                 img_t *psrc_img, uint16_t xs, uint16_t ys, uint16_t width, uint16_t height)
+{
+  int x, y;
+  uint32_t c;
+
+  for(y = 0; y < height; y++)
+  {
+    for(x = 0; x < width; x++)
+    {
+      c = _GetPixelClamped(psrc_img, xs+x, ys+y);
+      pdst_img->plot_func(pdst_img, xd+x, yd+y, c);
+    }
+  }
+}

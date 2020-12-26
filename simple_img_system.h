@@ -50,6 +50,10 @@ void img_plot_circle(img_t *pimg, uint16_t x0, uint16_t y0, uint16_t radius, uin
 void img_plot_vline(img_t *pimg, int32_t x, int32_t y0, int32_t y1, uint8_t t, uint32_t c);
 void img_plot_hline(img_t *pimg, int32_t x0, int32_t x1, int32_t y, uint8_t t, uint32_t c);
 void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, uint32_t c);
+
+void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd, 
+                 img_t *psrc_img, uint16_t xs, uint16_t ys, uint16_t width, uint16_t height);
+
 img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree);
 uint32_t img_save_png(img_t *pimg, const char *fname);
 void img_dump_stats(img_t *pimg, const char* title);
