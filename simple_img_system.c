@@ -30,6 +30,7 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
       indexed_palette_img_fill_vtable(ret);
     break;
 
+    case img_type_p332:
     case img_type_p565:
       ret->img_type = type;
       ret->width = width;
@@ -181,7 +182,36 @@ void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, u
   return;
 }
 
+static void _img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
+{
+  int x, y;
+  uint32_t c;
+  uint32_t output_idx = 0;
 
+  for(y = 0; y < pimg->height; y++)    
+  {
+    if(output_idx > (max_count - 3))
+    {
+      printf("Not enough room to store raw image for PNG conversion\n");
+      break;
+    }
+
+    for(x = 0; x < pimg->width; x++)
+    {
+      c = pimg->get_pixel_func(pimg, x, y);
+
+      if(output_idx > (max_count - 3))
+      {
+        printf("Not enough room to store raw image for PNG conversion\n");
+        break;
+      }
+
+      buffer[output_idx++] = GET_R(c);
+      buffer[output_idx++] = GET_G(c);
+      buffer[output_idx++] = GET_B(c);
+    }
+  }
+}
 
 // PNG saving, courtest of miniz: https://github.com/richgel999/miniz
 
@@ -201,7 +231,7 @@ uint32_t img_save_png(img_t *pimg, const char *fname)
     len = pimg->width * pimg->height * 3;
     uint8_t *expanded_image_buffer = (uint8_t*) malloc(len);
 
-    pimg->expand_func(pimg, expanded_image_buffer, len);
+    _img_expand(pimg, expanded_image_buffer, len);
 
     void *pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(expanded_image_buffer,
                              pimg->width, pimg->height, 3, &png_data_size, 6, MZ_FALSE);

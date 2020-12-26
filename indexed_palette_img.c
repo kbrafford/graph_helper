@@ -297,7 +297,6 @@ void indexed_palette_img_fill_vtable(img_t *pimg)
     break;
   }
 
-  pimg->expand_func = indexed_palette_img_expand;
   pimg->destroy_func = indexed_palette_img_destroy;
   pimg->dump_stats_func = indexed_palette_img_dump_stats;
   

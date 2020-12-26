@@ -16,6 +16,7 @@ typedef enum _img_type
   img_type_indexed_palette15    = 1,
   img_type_indexed_palette4095  = 2,
   img_type_p565                 = 3,
+  img_type_p332                 = 4,
 } img_type_t;
 
 
@@ -36,7 +37,6 @@ typedef struct _img_t
   // Implementation functions
   void (*plot_func)(struct _img_t*, uint16_t, uint16_t, uint32_t);
   void (*destroy_func)(struct _img_t*);
-  void (*expand_func)(struct _img_t *pimg, uint8_t *buffer, uint32_t max_len);
   void (*dump_stats_func)(struct _img_t *pimg, const char *title);
   uint32_t (*get_pixel_func)(struct _img_t *pimg, uint16_t x, uint16_t y);
 } img_t;

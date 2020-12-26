@@ -39,16 +39,41 @@ static p565_pixel_t _color2p565(uint32_t c)
   return ret;
 }
 
+static p332_pixel_t _color2p332(uint32_t c)
+{
+  p332_pixel_t ret;
+
+  ret.b = COLOR2P332_B(c);
+  ret.g = COLOR2P332_G(c);
+  ret.r = COLOR2P332_R(c);
+
+  return ret;
+}
+
+
 void *p565_img_create(img_t *pimg, uint32_t c)
 {
   int          i;
-  p565_pixel_t initial_color;
+  p565_pixel_t initial_color_565;
+  p332_pixel_t initial_color_332;
+  uint32_t     buffer_size;
 
   if(pimg)
   {
-    initial_color = _color2p565(c);
+    switch(pimg->img_type)
+    {
+    case img_type_p565:
+      initial_color_565 = _color2p565(c);
+      buffer_size = pimg->width * pimg->height * sizeof(p565_pixel_t);
+      pimg->data = (p565_pixel_t *) malloc(buffer_size);
+    break;
 
-    pimg->data = (p565_pixel_t *) malloc(pimg->width * pimg->height * sizeof(p565_pixel_t));
+    case img_type_p332:
+      initial_color_332 = _color2p332(c);
+      buffer_size = pimg->width * pimg->height * sizeof(p332_pixel_t);
+      pimg->data = (p332_pixel_t *) malloc(buffer_size);
+    break;
+    }
 
     if(!pimg->data)
     {
@@ -58,8 +83,18 @@ void *p565_img_create(img_t *pimg, uint32_t c)
     else
     {
       /* pre-fill the image with the background color */
-      for(i = 0; i < pimg->width * pimg->height; i++)
-        ((p565_pixel_t *)(pimg->data))[i] = initial_color;
+      switch (pimg->img_type)
+      {
+        case img_type_p565:
+          for(i = 0; i < pimg->width * pimg->height; i++)
+            ((p565_pixel_t *)(pimg->data))[i] = initial_color_565;
+        break;
+
+        case img_type_p332:
+          for(i = 0; i < pimg->width * pimg->height; i++)
+            ((p332_pixel_t *)(pimg->data))[i] = initial_color_332;
+        break;
+      }
     }
   }
   return pimg;
@@ -78,16 +113,27 @@ void p565_img_destroy(img_t *pimg)
 void p565_img_plot(img_t *pimg, uint16_t x, uint16_t y, uint32_t c)
 {
   uint32_t pixel_index;
-  p565_pixel_t our_color;
-
-  our_color = _color2p565(c);
+  p565_pixel_t our_color_565;
+  p332_pixel_t our_color_332;
 
   if(pimg)
   {
     if ((x < pimg->width) && (y < pimg->height))
     {
-      pixel_index = y * pimg->width + x;
-      ((p565_pixel_t *)pimg->data)[pixel_index] = our_color;
+      switch (pimg->img_type)
+      {
+        case img_type_p565:
+          our_color_565 = _color2p565(c);
+          pixel_index = y * pimg->width + x;
+          ((p565_pixel_t *)pimg->data)[pixel_index] = our_color_565;
+        break;
+
+        case img_type_p332:
+          our_color_332 = _color2p332(c);
+          pixel_index = y * pimg->width + x;
+          ((p332_pixel_t *)pimg->data)[pixel_index] = our_color_332;
+        break;
+      }
     }
   }
 }
@@ -106,41 +152,34 @@ void p565_img_dump_stats(img_t *pimg, const char* title)
 
 uint32_t p565_img_getpixelclamped (img_t *pimg, uint16_t x, uint16_t y)
 {
-  p565_pixel_t *data = (p565_pixel_t*) (pimg->data);
-  p565_pixel_t pel;
+  p565_pixel_t *data_565;
+  p565_pixel_t pel_565;
+  p332_pixel_t *data_332;
+  p332_pixel_t pel_332;
 
   _CLAMP(x, 0, pimg->width - 1);
   _CLAMP(y, 0, pimg->height - 1);    
 
-  pel = data[y*pimg->width + x];
-
-  return RGB(_LUT5[(pel.r)], _LUT6[(pel.g)], _LUT5[(pel.b)]);
-}
-
-void p565_img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
-{
-  int x, y;
-  p565_pixel_t *data = (p565_pixel_t*)pimg->data;
-  p565_pixel_t p;
-  uint32_t output_idx = 0;
-
-  for(y = 0; y < pimg->height; y++)    
+  switch(pimg->img_type)
   {
-    for(x = 0; x < pimg->width; x++)
-    {
-      p = data[pimg->width * y + x];
+    case img_type_p565:
+      data_565 = (p565_pixel_t*) (pimg->data);
+      pel_565 = data_565[y*pimg->width + x];
 
-      buffer[output_idx++] = p.r << 3;
-      buffer[output_idx++] = p.g << 2;
-      buffer[output_idx++] = p.b << 3;                
-    }
+      return RGB(_LUT5[(pel_565.r)], _LUT6[(pel_565.g)], _LUT5[(pel_565.b)]);
+
+    case img_type_p332:
+      data_332 = (p332_pixel_t*) (pimg->data);
+      pel_332 = data_332[y*pimg->width + x];
+
+      return RGB(_LUT3[(pel_332.r)], _LUT3[(pel_332.g)], _LUT2[(pel_332.b)]);
   }
 }
+
 
 void p565_img_fill_vtable(img_t *pimg)
 {
   pimg->plot_func = p565_img_plot;
-  pimg->expand_func = p565_img_expand;
   pimg->destroy_func = p565_img_destroy;
   pimg->dump_stats_func = p565_img_dump_stats;
   pimg->get_pixel_func = p565_img_getpixelclamped;
