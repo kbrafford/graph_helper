@@ -92,6 +92,9 @@ void *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32
         // add 50% extra to the buffer, plus some padding in case of odd sizes
         *data_size += ((*data_size)>>1) + padding;
       break;
+
+      default:
+        printf("Erroneous image type passed in to %s line %d\n", __FILE__,__LINE__);
     }
   }
   return (void*)pextra;
@@ -266,6 +269,9 @@ void indexed_palette_img_fill_vtable(img_t *pimg)
       pimg->plot_func = indexed_palette_img_plot4095;
       pimg->get_pixel_func = indexed_palette_img_getpixelclamped4095;      
     break;
+
+    default:
+      printf("Erroneous img type passed into %s line %d\n", __FILE__, __LINE__);
   }
 
   pimg->destroy_func = indexed_palette_img_destroy;
