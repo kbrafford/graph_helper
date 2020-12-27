@@ -1,4 +1,4 @@
-#include <malloc.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -90,6 +90,9 @@ img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
   case img_type_p332:
     data_size = w * h * sizeof(p332_pixel_t);
   break;
+
+  default:
+    printf("Erroneous image type passed into %s line %d\n", __FILE__,__LINE__);
   }
 
   ret = (img_t*) malloc(sizeof(img_t) +  data_size);
@@ -124,15 +127,6 @@ img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 }
 
 
-void p565_img_clear_to_color(img_t *pimg, uint32_t c)
-{
-  int i;
-  p565_pixel_t initial_color_565;
-  p332_pixel_t initial_color_332;
-
-}
-
-
 void p565_img_destroy(img_t *pimg)
 {
   if(pimg)
@@ -164,6 +158,9 @@ void p565_img_plot(img_t *pimg, uint16_t x, uint16_t y, uint32_t c)
           pixel_index = y * pimg->width + x;
           ((p332_pixel_t *)pimg->data)[pixel_index] = our_color_332;
         break;
+
+        default:
+          printf("Erroneous img type passed into %s line %d\n", __FILE__, __LINE__);
       }
     }
   }
@@ -204,6 +201,10 @@ uint32_t p565_img_getpixelclamped (img_t *pimg, uint16_t x, uint16_t y)
       pel_332 = data_332[y*pimg->width + x];
 
       return RGB(_LUT3[(pel_332.r)], _LUT3[(pel_332.g)], _LUT2[(pel_332.b)]);
+
+    default:
+      printf("Erroneous img type passed in to %s line %d\n", __FILE__, __LINE__);
+      return RGB(0,0,0);
   }
 }
 
