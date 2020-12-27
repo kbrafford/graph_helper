@@ -121,6 +121,11 @@ img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
         for(i = 0; i < ret->width * ret->height; i++)
           ((p332_pixel_t *)(ret->data))[i] = initial_color_332;
       break;
+
+      default:
+        printf("Erroneous image type passed in to %s line %d\n", __FILE__, __LINE__);
+        free(ret);
+        ret = (img_t*)NULL;
     }
   }
 
