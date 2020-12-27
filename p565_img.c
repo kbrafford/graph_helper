@@ -75,7 +75,7 @@ static p332_pixel_t _color2p332(uint32_t c)
 
 img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 {
-  img_t    *ret;
+  img_t    *ret = (img_t*)NULL;
   uint32_t  data_size;
   p565_pixel_t initial_color_565;
   p332_pixel_t initial_color_332;
@@ -93,6 +93,7 @@ img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 
   default:
     printf("Erroneous image type passed into %s line %d\n", __FILE__,__LINE__);
+    return ret;
   }
 
   ret = (img_t*) malloc(sizeof(img_t) +  data_size);

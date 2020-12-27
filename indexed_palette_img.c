@@ -56,7 +56,7 @@ uint16_t _get_color_idx(img_t *pimg, uint32_t c)
 
 img_t *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 {
-  img_t                   *ret;
+  img_t                   *ret = (img_t *)NULL;
   indexed_palette_extra_t *pextra;
   uint16_t                 color_idx;
   uint32_t                 data_size;
