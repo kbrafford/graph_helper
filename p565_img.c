@@ -73,20 +73,54 @@ static p332_pixel_t _color2p332(uint32_t c)
   return ret;
 }
 
-void *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t *data_size)
+img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 {
+  img_t    *ret;
+  uint32_t  data_size;
+  p565_pixel_t initial_color_565;
+  p332_pixel_t initial_color_332;
+  int i;
+
   switch(type)
   {
   case img_type_p565:
-    *data_size = w * h * sizeof(p565_pixel_t);
+    data_size = w * h * sizeof(p565_pixel_t);
   break;
 
   case img_type_p332:
-    *data_size = w * h * sizeof(p332_pixel_t);
+    data_size = w * h * sizeof(p332_pixel_t);
   break;
   }
 
-  return (void*)NULL;
+  ret = (img_t*) malloc(sizeof(img_t) +  data_size);
+  
+  if(ret)
+  {
+    ret->img_type = type;
+    ret->width = w;
+    ret->height = h;
+    ret->extra = (void*) NULL;
+    ret->data_size = data_size;
+    p565_img_fill_vtable(ret);
+
+    /* pre-fill the image with the background color */
+    switch (ret->img_type)
+    {
+      case img_type_p565:
+        initial_color_565 = _color2p565(c);    
+        for(i = 0; i < ret->width * ret->height; i++)
+          ((p565_pixel_t *)(ret->data))[i] = initial_color_565;
+      break;
+
+      case img_type_p332:
+        initial_color_332 = _color2p332(c);
+        for(i = 0; i < ret->width * ret->height; i++)
+          ((p332_pixel_t *)(ret->data))[i] = initial_color_332;
+      break;
+    }
+  }
+
+  return ret;
 }
 
 
@@ -96,21 +130,6 @@ void p565_img_clear_to_color(img_t *pimg, uint32_t c)
   p565_pixel_t initial_color_565;
   p332_pixel_t initial_color_332;
 
-  /* pre-fill the image with the background color */
-  switch (pimg->img_type)
-  {
-    case img_type_p565:
-      initial_color_565 = _color2p565(c);    
-      for(i = 0; i < pimg->width * pimg->height; i++)
-        ((p565_pixel_t *)(pimg->data))[i] = initial_color_565;
-    break;
-
-    case img_type_p332:
-      initial_color_332 = _color2p332(c);
-      for(i = 0; i < pimg->width * pimg->height; i++)
-        ((p332_pixel_t *)(pimg->data))[i] = initial_color_332;
-    break;
-  }
 }
 
 
@@ -195,5 +214,4 @@ void p565_img_fill_vtable(img_t *pimg)
   pimg->destroy_func = p565_img_destroy;
   pimg->dump_stats_func = p565_img_dump_stats;
   pimg->get_pixel_func = p565_img_getpixelclamped;
-  pimg->clear_to_color_func = p565_img_clear_to_color;
 }

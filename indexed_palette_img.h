@@ -3,7 +3,7 @@
 
 #include "simple_img_system.h"
 
-void *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h,uint32_t *data_size);
+img_t *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h,uint32_t c);
 
 void indexed_palette_img_clear_to_color(img_t *pimg, uint32_t c);
 

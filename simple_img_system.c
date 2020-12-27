@@ -28,49 +28,13 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
     case img_type_indexed_palette255:
     case img_type_indexed_palette15:
     case img_type_indexed_palette4095:
-      pextra = (void*) indexed_palette_img_create(type, width, height, &data_size);
+      ret = indexed_palette_img_create(type, width, height, c);
     break;
 
     case img_type_p332:
     case img_type_p565:
-      pextra = (void*) p565_img_create(type, width, height, &data_size);
+      ret = p565_img_create(type, width, height, c);
     break;
-  }
-
-  // Allocate the image structure, with the data buffer
-  // at the end
-  ret = (img_t*) malloc(sizeof(img_t) +  data_size);
-
-  if(ret)
-  {
-    ret->img_type = type;
-    ret->width = width;
-    ret->height = height;
-    ret->extra = pextra;
-    ret->data_size = data_size;
-
-    switch(type)
-    {
-      case img_type_indexed_palette255:
-      case img_type_indexed_palette15:
-      case img_type_indexed_palette4095:
-        indexed_palette_img_fill_vtable(ret);
-      break;
-
-      case img_type_p332:
-      case img_type_p565:
-        p565_img_fill_vtable(ret);
-      break;
-    }
-
-    ret->clear_to_color_func(ret, c);
-  }
-  else
-  {
-    /* if the image allocation failed, then free the extra
-       space, if there was extra space allocated */
-    if(pextra)
-      free(pextra);
   }
   
   return ret;

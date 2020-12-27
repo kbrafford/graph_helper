@@ -31,7 +31,6 @@ typedef struct _img_t
   void     (*plot_func)(struct _img_t*, uint16_t, uint16_t, uint32_t);
   void     (*destroy_func)(struct _img_t*);
   void     (*dump_stats_func)(struct _img_t *pimg, const char *title);
-  void     (*clear_to_color_func)(struct _img_t *pimg, uint32_t c);
 
   uint32_t (*get_pixel_func)(struct _img_t *pimg, uint16_t x, uint16_t y);
 

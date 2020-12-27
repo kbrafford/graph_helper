@@ -54,14 +54,17 @@ uint16_t _get_color_idx(img_t *pimg, uint32_t c)
   return extra->_mrc_idx;  
 }
 
-void *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t *data_size)
+img_t *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
 {
+  img_t                   *ret;
   indexed_palette_extra_t *pextra;
   uint16_t                 color_idx;
+  uint32_t                 data_size;
 
   // for this type of image, we have an "extra" structure
+  // which we allocate first
   pextra = (indexed_palette_extra_t *) malloc(sizeof(indexed_palette_extra_t));
-
+  
   if(pextra)
   {
     memset((void*)pextra, 0, sizeof(indexed_palette_extra_t));
@@ -69,48 +72,56 @@ void *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32
     pextra->next_color = 0;
     pextra->_mrc_idx = 0;
     pextra->_mrc = 0xFFFFFFFF;
-    
+
     int padding = 8;
 
     switch(type)
     {
       case img_type_indexed_palette15:
         pextra->palette_max_size = 15;
-        *data_size = w * h * sizeof(uint8_t) / 2 + padding;
+        data_size = w * h * sizeof(uint8_t) / 2 + padding;
       break;
 
       case img_type_indexed_palette255:
         pextra->palette_max_size = 255;
-        *data_size = w * h * sizeof(uint8_t);
+        data_size = w * h * sizeof(uint8_t);
       break;
 
       case img_type_indexed_palette4095:
         pextra->palette_max_size = 4095;
         // our allocation is for 1.5 bytes per pixel
-        *data_size = w * h * sizeof(uint8_t);
+        data_size = w * h * sizeof(uint8_t);
 
         // add 50% extra to the buffer, plus some padding in case of odd sizes
-        *data_size += ((*data_size)>>1) + padding;
+        data_size += ((data_size)>>1) + padding;
       break;
     }
+
+    // Allocate the image structure, with the data buffer
+    // at the end
+    ret = (img_t*) malloc(sizeof(img_t) +  data_size);
+    if(ret)
+    {
+      ret->img_type = type;
+      ret->width = w;
+      ret->height = h;
+      ret->extra = pextra;
+      ret->data_size = data_size;
+      indexed_palette_img_fill_vtable(ret);
+      
+      color_idx = _get_color_idx(ret, c);
+      memset(ret->data, color_idx, ret->data_size);
+    }
+    else
+    {
+      /* if the image allocation failed, then free the extra
+         space, if there was extra space allocated */
+      if(pextra)
+        free(pextra);
+    }
   }
-  return (void*)pextra;
-}
 
-void indexed_palette_img_clear_to_color(img_t *pimg, uint32_t c)
-{
-  uint16_t color_idx;
-
-  /* pre-fill the image with the background color */
-  /* the background color is always index zero    */
-  /* so that works the same in all color palettes */
-  /* this will ONLY work correctly at creation    */
-  /* time, when the first index is zero */
-  /* it will work for 8 bit indexed images, but   */
-  /* not the others */
-  /* refactor this later to work at any time */
-  color_idx = _get_color_idx(pimg, c);
-  memset(pimg->data, color_idx, pimg->data_size);    
+  return ret;
 }
 
 void indexed_palette_img_destroy(img_t *pimg)
@@ -270,5 +281,4 @@ void indexed_palette_img_fill_vtable(img_t *pimg)
 
   pimg->destroy_func = indexed_palette_img_destroy;
   pimg->dump_stats_func = indexed_palette_img_dump_stats;
-  pimg->clear_to_color_func = indexed_palette_img_clear_to_color;
 }
