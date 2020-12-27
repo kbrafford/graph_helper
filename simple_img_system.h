@@ -3,12 +3,7 @@
 #include <stdint.h>
 
 #define _CLAMP(v, min, max) if (v < min) { v = min; } else if (v > max) { v = max; } 
-
 #define RGB(r, g, b) ((r)<<16 | ((g)<<8) | (b))
-
-#define GET_R(c) (((c) & 0xFF0000) >> 16)
-#define GET_G(c) (((c) & 0x00FF00) >> 8)
-#define GET_B(c) (((c) & 0x0000FF) >> 0)
 
 typedef enum _img_type
 {
@@ -18,7 +13,6 @@ typedef enum _img_type
   img_type_p565                 = 3,
   img_type_p332                 = 4,
 } img_type_t;
-
 
 typedef struct _img_point_t
 {
@@ -31,15 +25,21 @@ typedef struct _img_t
   img_type_t img_type;
   uint16_t   width;
   uint16_t   height;
-  void*      data;
   void*      extra;
 
-  // Implementation functions
-  void (*plot_func)(struct _img_t*, uint16_t, uint16_t, uint32_t);
-  void (*destroy_func)(struct _img_t*);
-  void (*dump_stats_func)(struct _img_t *pimg, const char *title);
+  // Implementation functions (the "vtable")
+  void     (*plot_func)(struct _img_t*, uint16_t, uint16_t, uint32_t);
+  void     (*destroy_func)(struct _img_t*);
+  void     (*dump_stats_func)(struct _img_t *pimg, const char *title);
+  void     (*clear_to_color_func)(struct _img_t *pimg, uint32_t c);
+
   uint32_t (*get_pixel_func)(struct _img_t *pimg, uint16_t x, uint16_t y);
+
+  // the data buffer for the image will be stored at the end of this driver header
+  uint32_t data_size;
+  uint8_t  data[0];
 } img_t;
+
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c);
 
@@ -50,7 +50,6 @@ void img_plot_circle(img_t *pimg, uint16_t x0, uint16_t y0, uint16_t radius, uin
 void img_plot_vline(img_t *pimg, int32_t x, int32_t y0, int32_t y1, uint8_t t, uint32_t c);
 void img_plot_hline(img_t *pimg, int32_t x0, int32_t x1, int32_t y, uint8_t t, uint32_t c);
 void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, uint32_t c);
-
 void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd, 
                  img_t *psrc_img, uint16_t xs, uint16_t ys, uint16_t width, uint16_t height);
 

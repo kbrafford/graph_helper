@@ -1,7 +1,30 @@
 #include <malloc.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "p565_img.h"
+
+#define COLOR2P565_B(c) ((((c) & 0xFF) * 249 + 1014) >> 11)
+#define COLOR2P565_G(c) (((((c) & 0xFF00) >> 8) * 253 + 505) >> 10)
+#define COLOR2P565_R(c) (((((c) & 0xFF0000) >> 16) * 249 + 1014) >> 11)
+
+#define COLOR2P332_B(c) (((c) & 0xFF) >> 6)
+#define COLOR2P332_G(c) ((((c) & 0xFF00) >> 8) >> 5)
+#define COLOR2P332_R(c) ((((c) & 0xFF0000) >> 16) >> 5)
+
+typedef struct _p565_pixel_t
+{
+  uint16_t b : 5;
+  uint16_t g : 6;
+  uint16_t r : 5;
+} p565_pixel_t;
+
+typedef struct _p332_pixel_t
+{
+  uint8_t b : 2;
+  uint8_t g : 3;
+  uint8_t r : 3;
+} p332_pixel_t;
 
 static const uint8_t _LUT5[32] = 
 {
@@ -50,62 +73,51 @@ static p332_pixel_t _color2p332(uint32_t c)
   return ret;
 }
 
-
-void *p565_img_create(img_t *pimg, uint32_t c)
+void *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t *data_size)
 {
-  int          i;
+  switch(type)
+  {
+  case img_type_p565:
+    *data_size = w * h * sizeof(p565_pixel_t);
+  break;
+
+  case img_type_p332:
+    *data_size = w * h * sizeof(p332_pixel_t);
+  break;
+  }
+
+  return (void*)NULL;
+}
+
+
+void p565_img_clear_to_color(img_t *pimg, uint32_t c)
+{
+  int i;
   p565_pixel_t initial_color_565;
   p332_pixel_t initial_color_332;
-  uint32_t     buffer_size;
 
-  if(pimg)
+  /* pre-fill the image with the background color */
+  switch (pimg->img_type)
   {
-    switch(pimg->img_type)
-    {
     case img_type_p565:
-      initial_color_565 = _color2p565(c);
-      buffer_size = pimg->width * pimg->height * sizeof(p565_pixel_t);
-      pimg->data = (p565_pixel_t *) malloc(buffer_size);
+      initial_color_565 = _color2p565(c);    
+      for(i = 0; i < pimg->width * pimg->height; i++)
+        ((p565_pixel_t *)(pimg->data))[i] = initial_color_565;
     break;
 
     case img_type_p332:
       initial_color_332 = _color2p332(c);
-      buffer_size = pimg->width * pimg->height * sizeof(p332_pixel_t);
-      pimg->data = (p332_pixel_t *) malloc(buffer_size);
+      for(i = 0; i < pimg->width * pimg->height; i++)
+        ((p332_pixel_t *)(pimg->data))[i] = initial_color_332;
     break;
-    }
-
-    if(!pimg->data)
-    {
-      free(pimg);
-      pimg = NULL;
-    }
-    else
-    {
-      /* pre-fill the image with the background color */
-      switch (pimg->img_type)
-      {
-        case img_type_p565:
-          for(i = 0; i < pimg->width * pimg->height; i++)
-            ((p565_pixel_t *)(pimg->data))[i] = initial_color_565;
-        break;
-
-        case img_type_p332:
-          for(i = 0; i < pimg->width * pimg->height; i++)
-            ((p332_pixel_t *)(pimg->data))[i] = initial_color_332;
-        break;
-      }
-    }
   }
-  return pimg;
 }
+
 
 void p565_img_destroy(img_t *pimg)
 {
   if(pimg)
   {
-    if(pimg->data)
-      free(pimg->data);
     free(pimg);
   }
 }
@@ -183,4 +195,5 @@ void p565_img_fill_vtable(img_t *pimg)
   pimg->destroy_func = p565_img_destroy;
   pimg->dump_stats_func = p565_img_dump_stats;
   pimg->get_pixel_func = p565_img_getpixelclamped;
+  pimg->clear_to_color_func = p565_img_clear_to_color;
 }

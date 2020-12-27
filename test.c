@@ -9,8 +9,8 @@
    if drawing a lot of different things */
 //img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette15;
-//img_type_t type = img_type_indexed_palette255;
-img_type_t type = img_type_p332;
+img_type_t type = img_type_indexed_palette255;
+//img_type_t type = img_type_p332;
 
 int main()
 {

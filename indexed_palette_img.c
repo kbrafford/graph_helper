@@ -1,9 +1,19 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "simple_img_system.h"
 #include "indexed_palette_img.h"
+
+typedef struct _indexed_palette_extra_t
+{
+  uint32_t palette[4096];
+  uint32_t _mrc;
+  uint8_t  next_color;
+  uint8_t  _mrc_idx;  
+  uint16_t palette_max_size;  
+} indexed_palette_extra_t;
 
 
 uint16_t _get_color_idx(img_t *pimg, uint32_t c)
@@ -44,74 +54,69 @@ uint16_t _get_color_idx(img_t *pimg, uint32_t c)
   return extra->_mrc_idx;  
 }
 
-indexed_palette_extra_t *indexed_palette_img_create(img_t *pimg, uint32_t c)
+void *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t *data_size)
 {
   indexed_palette_extra_t *pextra;
-  uint8_t                  color_idx;
+  uint16_t                 color_idx;
 
+  // for this type of image, we have an "extra" structure
   pextra = (indexed_palette_extra_t *) malloc(sizeof(indexed_palette_extra_t));
 
   if(pextra)
   {
     memset((void*)pextra, 0, sizeof(indexed_palette_extra_t));
-    pimg->extra = pextra;
 
     pextra->next_color = 0;
     pextra->_mrc_idx = 0;
     pextra->_mrc = 0xFFFFFFFF;
     
-    int buffer_size;
     int padding = 8;
 
-    switch(pimg->img_type)
+    switch(type)
     {
       case img_type_indexed_palette15:
         pextra->palette_max_size = 15;
-        buffer_size = pimg->width * pimg->height * sizeof(uint8_t) / 2 + padding;
-        pimg->data = (uint8_t *) malloc(buffer_size);
+        *data_size = w * h * sizeof(uint8_t) / 2 + padding;
       break;
 
       case img_type_indexed_palette255:
         pextra->palette_max_size = 255;
-        buffer_size = pimg->width * pimg->height * sizeof(uint8_t);
-        pimg->data = (uint8_t *) malloc(buffer_size);
+        *data_size = w * h * sizeof(uint8_t);
       break;
 
       case img_type_indexed_palette4095:
         pextra->palette_max_size = 4095;
         // our allocation is for 1.5 bytes per pixel
-        buffer_size = pimg->width * pimg->height * sizeof(uint8_t);
+        *data_size = w * h * sizeof(uint8_t);
 
         // add 50% extra to the buffer, plus some padding in case of odd sizes
-        buffer_size += (buffer_size>>1) + padding;
-        pimg->data = (uint8_t *) malloc(buffer_size);
+        *data_size += ((*data_size)>>1) + padding;
       break;
     }
-
-    if(!pimg->data)
-    {
-      free(pextra);
-      pextra = NULL;
-    }
-    else
-    {
-      /* pre-fill the image with the background color */
-      /* the background color is always index zero    */
-      /* so that works the same in all color palettes */
-      color_idx = _get_color_idx(pimg, c);
-      memset(pimg->data, color_idx, buffer_size);
-    }
   }
+  return (void*)pextra;
+}
 
-  return pextra;
+void indexed_palette_img_clear_to_color(img_t *pimg, uint32_t c)
+{
+  uint16_t color_idx;
+
+  /* pre-fill the image with the background color */
+  /* the background color is always index zero    */
+  /* so that works the same in all color palettes */
+  /* this will ONLY work correctly at creation    */
+  /* time, when the first index is zero */
+  /* it will work for 8 bit indexed images, but   */
+  /* not the others */
+  /* refactor this later to work at any time */
+  color_idx = _get_color_idx(pimg, c);
+  memset(pimg->data, color_idx, pimg->data_size);    
 }
 
 void indexed_palette_img_destroy(img_t *pimg)
 {
   if(pimg)
   {
-    if(pimg->data)
-      free(pimg->data);
     if(pimg->extra)
       free(pimg->extra);
     free(pimg);
@@ -171,40 +176,6 @@ void indexed_palette_img_plot4095(img_t *pimg, uint16_t x, uint16_t y, uint32_t 
 {
   printf("Not implemented yet!\n");
 }
-
-
-void indexed_palette_img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
-{
-  int x, y;
-  uint32_t c;
-  uint32_t output_idx = 0;
-  indexed_palette_extra_t *pextra = (indexed_palette_extra_t*)(pimg->extra);
-
-  for(y = 0; y < pimg->height; y++)    
-  {
-    if(output_idx >= (max_count - 3))
-    {
-      printf("Not enough room to store raw image for PNG conversion\n");
-      break;
-    }
-
-    for(x = 0; x < pimg->width; x++)
-    {
-      c = pimg->get_pixel_func(pimg, x, y);
-
-      if(output_idx >= (max_count - 3))
-      {
-        printf("Not enough room to store raw image for PNG conversion\n");
-        break;
-      }
-
-      buffer[output_idx++] = GET_R(c);
-      buffer[output_idx++] = GET_G(c);
-      buffer[output_idx++] = GET_B(c);
-    }
-  }
-}
-
 
 void indexed_palette_img_dump_stats(img_t *pimg, const char* title)
 {
@@ -299,5 +270,5 @@ void indexed_palette_img_fill_vtable(img_t *pimg)
 
   pimg->destroy_func = indexed_palette_img_destroy;
   pimg->dump_stats_func = indexed_palette_img_dump_stats;
-  
+  pimg->clear_to_color_func = indexed_palette_img_clear_to_color;
 }
