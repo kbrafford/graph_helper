@@ -12,6 +12,8 @@ typedef enum _img_type
   img_type_indexed_palette4095  = 2,
   img_type_p565                 = 3,
   img_type_p332                 = 4,
+  img_type_grayscale8           = 5,
+  img_type_grayscale4           = 6,
 } img_type_t;
 
 typedef struct _img_point_t

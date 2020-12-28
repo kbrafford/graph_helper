@@ -9,8 +9,10 @@
    if drawing a lot of different things */
 //img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette15;
-img_type_t type = img_type_indexed_palette255;
+//img_type_t type = img_type_indexed_palette255;
 //img_type_t type = img_type_p332;
+img_type_t type = img_type_grayscale8;
+
 
 int main()
 {
@@ -56,9 +58,10 @@ int main()
 
   img_t *pimg_nn, *pimg_bil, *pimg_bic;
 
-  pimg_nn  = img_resize(img_type_p565, pimg, .33, 0);
-  pimg_bil = img_resize(img_type_p565, pimg, .33, 1);
-  pimg_bic = img_resize(img_type_p565, pimg, .33, 2);
+  printf("got here 1!\n"); fflush(stdout);
+  pimg_nn  = img_resize(img_type_grayscale8, pimg, .33, 0);
+  pimg_bil = img_resize(img_type_grayscale8, pimg, .33, 1);
+  pimg_bic = img_resize(img_type_grayscale8, pimg, .33, 2);
 
   img_save_png(pimg, "image.png");
   img_save_png(pimg_nn, "image_nn.png");

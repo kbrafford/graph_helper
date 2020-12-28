@@ -10,6 +10,7 @@
 #include "simple_img_system.h"
 #include "indexed_palette_img.h"
 #include "p565_img.h"
+#include "grayscale_img.h"
 
 
 #define GET_R(c) (((c) & 0xFF0000) >> 16)
@@ -19,7 +20,7 @@
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
 {
-  img_t   *ret;
+  img_t   *ret = (img_t*)NULL;
   void    *pextra;
   uint32_t data_size;
 
@@ -34,6 +35,11 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
     case img_type_p332:
     case img_type_p565:
       ret = p565_img_create(type, width, height, c);
+    break;
+
+    case img_type_grayscale8:
+    case img_type_grayscale4:
+      ret = grayscale_img_create(type, width, height, c);
     break;
   }
   
