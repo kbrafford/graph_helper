@@ -7,6 +7,7 @@
 /* PICK WHICH STYLE OF IMAGE YOU WANT */
 /* Note that if you use indexed_palette, you will run out of colors fast
    if drawing a lot of different things */
+
 //img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette15;
 //img_type_t type = img_type_indexed_palette255;
@@ -62,6 +63,8 @@ int main()
   pimg_bic = img_resize(img_type_rgb888, pimg, .33, 2);
 
   img_save_png(pimg, "image.png");
+  img_save_bmp(pimg, "image.bmp");
+
   img_save_png(pimg_nn, "image_nn.png");
   img_save_png(pimg_bil, "image_bil.png");
   img_save_png(pimg_bic, "image_bic.png");

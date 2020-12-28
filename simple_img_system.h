@@ -64,5 +64,7 @@ void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd,
 
 img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree);
 uint32_t img_save_png(img_t *pimg, const char *fname);
+void img_save_bmp (img_t *pimg, const char *fileName);
+
 void img_dump_stats(img_t *pimg, const char* title);
 #endif

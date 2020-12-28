@@ -293,45 +293,62 @@ typedef struct tagBITMAPINFOHEADER {
 
 void img_save_bmp (img_t *pimg, const char *fileName)
 {
-    // open the file if we can
-    FILE *file;
-    file = fopen(fileName, "wb");
-    
-    if (!file)
-        return;
+  int y;
 
-    // make the header info
-    BITMAPFILEHEADER header;
-    BITMAPINFOHEADER infoHeader;
- 
-    header.bfType = 0x4D42;
-    header.bfReserved1 = 0;
-    header.bfReserved2 = 0;
-    header.bfOffBits = 54;
- 
-    infoHeader.biSize = 40;
-    infoHeader.biWidth = pimg->width;
-    infoHeader.biHeight = pimg->height;
-    infoHeader.biPlanes = 1;
-    infoHeader.biBitCount = pimg->num_channels * 8;
-    infoHeader.biCompression = 0;
-    infoHeader.biSizeImage = pimg->width * pimg->height * pimg->num_channels;
-    infoHeader.biXPelsPerMeter = 0;
-    infoHeader.biYPelsPerMeter = 0;
-    infoHeader.biClrUsed = 0;
-    infoHeader.biClrImportant = 0;
- 
-    header.bfSize = infoHeader.biSizeImage + header.bfOffBits;
- 
-    // write the data and close the file
-    fwrite(&header, sizeof(header), 1, file);
-    fwrite(&infoHeader, sizeof(infoHeader), 1, file);
+  // open the file if we can
+  FILE *file;
+  file = fopen(fileName, "wb");
     
-    /* create a width x 1 RGB image that we can bitblt into */
-    //img_t *p_tmp = img_create(img_type)
-    //fwrite(&image.m_pixels[0], infoHeader.biSizeImage, 1, file);
-    fclose(file);
+  if (!file)
     return;
+
+  // make the header info
+  BITMAPFILEHEADER header;
+  BITMAPINFOHEADER infoHeader;
+ 
+  header.bfType = 0x4D42;
+  header.bfReserved1 = 0;
+  header.bfReserved2 = 0;
+  header.bfOffBits = 54;
+ 
+  infoHeader.biSize = 40;
+  infoHeader.biWidth = pimg->width;
+  infoHeader.biHeight = pimg->height;
+  infoHeader.biPlanes = 1;
+  infoHeader.biBitCount = pimg->num_channels * 8;
+  infoHeader.biCompression = 0;
+  infoHeader.biSizeImage = pimg->width * pimg->height * pimg->num_channels;
+  infoHeader.biXPelsPerMeter = 0;
+  infoHeader.biYPelsPerMeter = 0;
+  infoHeader.biClrUsed = 0;
+  infoHeader.biClrImportant = 0;
+ 
+  header.bfSize = infoHeader.biSizeImage + header.bfOffBits;
+ 
+  // write the data and close the file
+  fwrite(&header, sizeof(header), 1, file);
+  fwrite(&infoHeader, sizeof(infoHeader), 1, file);
+    
+  /* create a width x 1 RGB image that we can bitblt into */
+  img_t *p_tmp = img_create(img_type_rgb888, pimg->width, 1, 0);
+
+  if(p_tmp)
+  {
+    for(y = 0; y < pimg->height; y++)
+    {
+      // copy the source data into the rgb888 buffer
+      img_bit_blt(p_tmp, 0, 0, pimg, 0, y, pimg->width, 1);
+
+      // write it to disc
+      fwrite(p_tmp->data, 3 * pimg->width, 1, file);
+    }
+
+    fclose(file);
+
+    img_destroy(p_tmp);
+  }
+
+  return;
 }
 
 void img_dump_stats(img_t *pimg, const char* title)
