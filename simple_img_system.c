@@ -269,27 +269,29 @@ uint32_t img_save_png(img_t *pimg, const char *fname)
 }
 
 
+#pragma pack(push, 2)
 typedef struct tagBITMAPFILEHEADER {
-  uint16_t  bfType      __attribute__ ((packed));
-  uint32_t  bfSize      __attribute__ ((packed));
-  uint16_t  bfReserved1 __attribute__ ((packed));
-  uint16_t  bfReserved2 __attribute__ ((packed));
-  uint32_t  bfOffBits   __attribute__ ((packed));
+  uint16_t  bfType;
+  uint32_t  bfSize;
+  uint16_t  bfReserved1;
+  uint16_t  bfReserved2;
+  uint32_t  bfOffBits;
 } BITMAPFILEHEADER;
 
 typedef struct tagBITMAPINFOHEADER {
-  uint32_t biSize           __attribute__ ((packed));
-  int32_t  biWidth          __attribute__ ((packed));
-  int32_t  biHeight         __attribute__ ((packed));
-  uint16_t  biPlanes        __attribute__ ((packed));
-  uint16_t  biBitCount      __attribute__ ((packed));
-  uint32_t biCompression    __attribute__ ((packed));
-  uint32_t biSizeImage      __attribute__ ((packed));
-  int32_t  biXPelsPerMeter  __attribute__ ((packed));
-  int32_t  biYPelsPerMeter  __attribute__ ((packed));
-  uint32_t biClrUsed        __attribute__ ((packed));
-  uint32_t biClrImportant   __attribute__ ((packed));
+  uint32_t biSize;
+  int32_t  biWidth;
+  int32_t  biHeight;
+  uint16_t  biPlanes;
+  uint16_t  biBitCount;
+  uint32_t biCompression;
+  uint32_t biSizeImage;
+  int32_t  biXPelsPerMeter;
+  int32_t  biYPelsPerMeter;
+  uint32_t biClrUsed;
+  uint32_t biClrImportant;
 } BITMAPINFOHEADER;
+#pragma pack(pop)
 
 void img_save_bmp (img_t *pimg, const char *fileName)
 {
