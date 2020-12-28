@@ -3,7 +3,13 @@
 #include <stdint.h>
 
 #define _CLAMP(v, min, max) if (v < min) { v = min; } else if (v > max) { v = max; } 
+
+// Interfacing with our uint32_t style pixel
 #define RGB(r, g, b) ((r)<<16 | ((g)<<8) | (b))
+
+#define GET_R(c) (((c) & 0xFF0000) >> 16)
+#define GET_G(c) (((c) & 0x00FF00) >> 8)
+#define GET_B(c) (((c) & 0x0000FF) >> 0)
 
 typedef enum _img_type
 {
@@ -14,6 +20,7 @@ typedef enum _img_type
   img_type_p332                 = 4,
   img_type_grayscale8           = 5,
   img_type_grayscale4           = 6,
+  img_type_rgb888               = 7,
 } img_type_t;
 
 typedef struct _img_point_t

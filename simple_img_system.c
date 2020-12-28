@@ -11,11 +11,7 @@
 #include "indexed_palette_img.h"
 #include "p565_img.h"
 #include "grayscale_img.h"
-
-
-#define GET_R(c) (((c) & 0xFF0000) >> 16)
-#define GET_G(c) (((c) & 0x00FF00) >> 8)
-#define GET_B(c) (((c) & 0x0000FF) >> 0)
+#include "rgb888_img.h"
 
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
@@ -40,6 +36,10 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
     case img_type_grayscale8:
     case img_type_grayscale4:
       ret = grayscale_img_create(type, width, height, c);
+    break;
+
+    case img_type_rgb888:
+      ret = rgb888_img_create(type, width, height, c);
     break;
   }
   
@@ -259,12 +259,80 @@ uint32_t img_save_png(img_t *pimg, const char *fname)
     fwrite(pPNG_data, 1, png_data_size, fp);
     fclose(fp);
 
+    if(expanded_image_buffer)
+      free(expanded_image_buffer);
+
     rc = 0;
   }
 
   return rc;
 }
 
+
+typedef struct tagBITMAPFILEHEADER {
+  uint16_t  bfType;
+  uint32_t  bfSize;
+  uint16_t  bfReserved1;
+  uint16_t  bfReserved2;
+  uint32_t  bfOffBits;
+} BITMAPFILEHEADER;
+
+typedef struct tagBITMAPINFOHEADER {
+  uint32_t biSize;
+  int32_t  biWidth;
+  int32_t  biHeight;
+  uint16_t  biPlanes;
+  uint16_t  biBitCount;
+  uint32_t biCompression;
+  uint32_t biSizeImage;
+  int32_t  biXPelsPerMeter;
+  int32_t  biYPelsPerMeter;
+  uint32_t biClrUsed;
+  uint32_t biClrImportant;
+} BITMAPINFOHEADER;
+
+void img_save_bmp (img_t *pimg, const char *fileName)
+{
+    // open the file if we can
+    FILE *file;
+    file = fopen(fileName, "wb");
+    
+    if (!file)
+        return;
+
+    // make the header info
+    BITMAPFILEHEADER header;
+    BITMAPINFOHEADER infoHeader;
+ 
+    header.bfType = 0x4D42;
+    header.bfReserved1 = 0;
+    header.bfReserved2 = 0;
+    header.bfOffBits = 54;
+ 
+    infoHeader.biSize = 40;
+    infoHeader.biWidth = pimg->width;
+    infoHeader.biHeight = pimg->height;
+    infoHeader.biPlanes = 1;
+    infoHeader.biBitCount = pimg->num_channels * 8;
+    infoHeader.biCompression = 0;
+    infoHeader.biSizeImage = pimg->width * pimg->height * pimg->num_channels;
+    infoHeader.biXPelsPerMeter = 0;
+    infoHeader.biYPelsPerMeter = 0;
+    infoHeader.biClrUsed = 0;
+    infoHeader.biClrImportant = 0;
+ 
+    header.bfSize = infoHeader.biSizeImage + header.bfOffBits;
+ 
+    // write the data and close the file
+    fwrite(&header, sizeof(header), 1, file);
+    fwrite(&infoHeader, sizeof(infoHeader), 1, file);
+    
+    /* create a width x 1 RGB image that we can bitblt into */
+    //img_t *p_tmp = img_create(img_type)
+    //fwrite(&image.m_pixels[0], infoHeader.biSizeImage, 1, file);
+    fclose(file);
+    return;
+}
 
 void img_dump_stats(img_t *pimg, const char* title)
 {
@@ -347,7 +415,7 @@ static uint32_t _SampleLinear (img_t *pimg, float u, float v)
 
     _CLAMP(value, 0.0f, 255.0f);
 
-    ret.as_uint8[i] = (uint8_t)value & 0xF8;
+    ret.as_uint8[i] = (uint8_t)value;
   }
 
   return ret.as_uint32;
@@ -406,7 +474,7 @@ static uint32_t _SampleBicubic (img_t *pimg, float u, float v)
         float col3 = _CubicHermite(p03.as_uint8[i], p13.as_uint8[i], p23.as_uint8[i], p33.as_uint8[i], xfract);
         float value = _CubicHermite(col0, col1, col2, col3, yfract);
         _CLAMP(value, 0.0f, 255.0f);
-        ret.as_uint8[i] = (uint8_t)value & 0xF8;
+        ret.as_uint8[i] = (uint8_t)value;
     }
     return ret.as_uint32;
 }

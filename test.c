@@ -9,20 +9,20 @@
    if drawing a lot of different things */
 //img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette15;
-img_type_t type = img_type_indexed_palette255;
+//img_type_t type = img_type_indexed_palette255;
 //img_type_t type = img_type_p332;
 //img_type_t type = img_type_grayscale8;
-
+img_type_t type = img_type_rgb888;
 
 int main()
 {
   img_t *pimg;
-
+ 
   pimg = img_create(type, IMG_X, IMG_Y, RGB(255,255,255));
 
   img_plot_line(pimg, 0,0,IMG_X-1,IMG_Y-1, 3, RGB(0,0,255));
   img_plot_line(pimg, IMG_X-1,0,0,IMG_Y-1, 3, RGB(0,0,255));
-  //img_plot_vline(pimg, IMG_X/2-1, 5, IMG_Y-6, 6, RGB(128, 0, 200));
+  img_plot_vline(pimg, IMG_X/2-1, 5, IMG_Y-6, 6, RGB(128, 0, 200));
 
   img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4, RGB(255,0,25));
   img_plot_circle(pimg, IMG_X/2-1, IMG_Y/2-1, IMG_X/4-1, RGB(255,0,25));
@@ -57,9 +57,9 @@ int main()
   img_plot_line(pimg, 3, 3, 250, 250, 7, RGB(64,64, 225));
 
   img_t *pimg_nn, *pimg_bil, *pimg_bic;
-  pimg_nn  = img_resize(img_type_grayscale8, pimg, .33, 0);
-  pimg_bil = img_resize(img_type_grayscale8, pimg, .33, 1);
-  pimg_bic = img_resize(img_type_grayscale8, pimg, .33, 2);
+  pimg_nn  = img_resize(img_type_rgb888, pimg, .33, 0);
+  pimg_bil = img_resize(img_type_rgb888, pimg, .33, 1);
+  pimg_bic = img_resize(img_type_rgb888, pimg, .33, 2);
 
   img_save_png(pimg, "image.png");
   img_save_png(pimg_nn, "image_nn.png");
