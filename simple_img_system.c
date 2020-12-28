@@ -186,7 +186,7 @@ static void _img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
 
   for(y = 0; y < pimg->height; y++)    
   {
-    if(output_idx > (max_count - 3))
+    if(output_idx > (max_count - pimg->num_channels))
     {
       printf("Not enough room to store raw image for PNG conversion\n");
       break;
@@ -196,15 +196,25 @@ static void _img_expand(img_t *pimg, uint8_t *buffer, uint32_t max_count)
     {
       c = pimg->get_pixel_func(pimg, x, y);
 
-      if(output_idx > (max_count - 3))
+      if(output_idx > (max_count - pimg->num_channels))
       {
         printf("Not enough room to store raw image for PNG conversion\n");
         break;
       }
 
-      buffer[output_idx++] = GET_R(c);
-      buffer[output_idx++] = GET_G(c);
-      buffer[output_idx++] = GET_B(c);
+      switch(pimg->num_channels)
+      {
+        case 3:
+          buffer[output_idx++] = GET_R(c);
+          buffer[output_idx++] = GET_G(c);
+        case 1:
+          buffer[output_idx++] = GET_B(c);
+        break;
+
+        default:
+          printf("invalid channel spec in %s line %d\n", __FILE__, __LINE__);
+          return;
+      }
     }
   }
 }
@@ -224,13 +234,20 @@ uint32_t img_save_png(img_t *pimg, const char *fname)
 
   if(pimg)
   {
-    len = pimg->width * pimg->height * 3;
+    if((pimg->num_channels != 1) && (pimg->num_channels != 3))
+    {
+      printf("Error: only 1 or 3 channels supported\n");
+      return rc;
+    }
+
+    len = pimg->width * pimg->height * pimg->num_channels;
     uint8_t *expanded_image_buffer = (uint8_t*) malloc(len);
 
     _img_expand(pimg, expanded_image_buffer, len);
 
     void *pPNG_data = tdefl_write_image_to_png_file_in_memory_ex(expanded_image_buffer,
-                             pimg->width, pimg->height, 3, &png_data_size, 6, MZ_FALSE);
+                             pimg->width, pimg->height, pimg->num_channels,
+                             &png_data_size, 6, MZ_FALSE);
 
     fp = fopen(fname, "wb");
     fwrite(pPNG_data, 1, png_data_size, fp);

@@ -110,6 +110,7 @@ img_t *indexed_palette_img_create(img_type_t type, uint16_t w, uint16_t h, uint3
       ret->height = h;
       ret->extra = pextra;
       ret->data_size = data_size;
+      ret->num_channels = 3;
       indexed_palette_img_fill_vtable(ret);
       
       color_idx = _get_color_idx(ret, c);

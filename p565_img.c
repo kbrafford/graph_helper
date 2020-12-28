@@ -103,6 +103,7 @@ img_t *p565_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
     ret->img_type = type;
     ret->width = w;
     ret->height = h;
+    ret->num_channels = 3;
     ret->extra = (void*) NULL;
     ret->data_size = data_size;
     p565_img_fill_vtable(ret);
