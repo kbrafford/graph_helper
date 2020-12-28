@@ -331,7 +331,10 @@ void img_save_bmp (img_t *pimg, const char *fileName)
   fwrite(&header, sizeof(header), 1, file);
   fwrite(&infoHeader, sizeof(infoHeader), 1, file);
     
-  /* create a width x 1 RGB image that we can bitblt into */
+  /* create a _width_ x 1 RGB image that we can bitblt into */
+  /* that way we can use the rgb888 image type as a way   */
+  /* to convert from any pixel type into the native BMP   */
+  /* format */
   img_t *p_tmp = img_create(img_type_rgb888, pimg->width, 1, 0);
 
   if(p_tmp)
@@ -341,7 +344,7 @@ void img_save_bmp (img_t *pimg, const char *fileName)
       // copy the source data into the rgb888 buffer
       img_bit_blt(p_tmp, 0, 0, pimg, 0, y-1, pimg->width, 1);
 
-      // write it to disc
+      // write it to disk
       fwrite(p_tmp->data, 3 * pimg->width, 1, file);
     }
 
