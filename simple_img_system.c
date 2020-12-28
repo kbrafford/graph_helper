@@ -270,25 +270,25 @@ uint32_t img_save_png(img_t *pimg, const char *fname)
 
 
 typedef struct tagBITMAPFILEHEADER {
-  uint16_t  bfType;
-  uint32_t  bfSize;
-  uint16_t  bfReserved1;
-  uint16_t  bfReserved2;
-  uint32_t  bfOffBits;
+  uint16_t  bfType      __attribute__ ((packed));
+  uint32_t  bfSize      __attribute__ ((packed));
+  uint16_t  bfReserved1 __attribute__ ((packed));
+  uint16_t  bfReserved2 __attribute__ ((packed));
+  uint32_t  bfOffBits   __attribute__ ((packed));
 } BITMAPFILEHEADER;
 
 typedef struct tagBITMAPINFOHEADER {
-  uint32_t biSize;
-  int32_t  biWidth;
-  int32_t  biHeight;
-  uint16_t  biPlanes;
-  uint16_t  biBitCount;
-  uint32_t biCompression;
-  uint32_t biSizeImage;
-  int32_t  biXPelsPerMeter;
-  int32_t  biYPelsPerMeter;
-  uint32_t biClrUsed;
-  uint32_t biClrImportant;
+  uint32_t biSize           __attribute__ ((packed));
+  int32_t  biWidth          __attribute__ ((packed));
+  int32_t  biHeight         __attribute__ ((packed));
+  uint16_t  biPlanes        __attribute__ ((packed));
+  uint16_t  biBitCount      __attribute__ ((packed));
+  uint32_t biCompression    __attribute__ ((packed));
+  uint32_t biSizeImage      __attribute__ ((packed));
+  int32_t  biXPelsPerMeter  __attribute__ ((packed));
+  int32_t  biYPelsPerMeter  __attribute__ ((packed));
+  uint32_t biClrUsed        __attribute__ ((packed));
+  uint32_t biClrImportant   __attribute__ ((packed));
 } BITMAPINFOHEADER;
 
 void img_save_bmp (img_t *pimg, const char *fileName)
@@ -334,10 +334,10 @@ void img_save_bmp (img_t *pimg, const char *fileName)
 
   if(p_tmp)
   {
-    for(y = 0; y < pimg->height; y++)
+    for(y = pimg->height; y > 0; y--)
     {
       // copy the source data into the rgb888 buffer
-      img_bit_blt(p_tmp, 0, 0, pimg, 0, y, pimg->width, 1);
+      img_bit_blt(p_tmp, 0, 0, pimg, 0, y-1, pimg->width, 1);
 
       // write it to disc
       fwrite(p_tmp->data, 3 * pimg->width, 1, file);
