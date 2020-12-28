@@ -25,6 +25,7 @@ typedef struct _img_t
   img_type_t img_type;
   uint16_t   width;
   uint16_t   height;
+  uint16_t   num_channels;
   void*      extra;
 
   // Implementation functions (the "vtable")
