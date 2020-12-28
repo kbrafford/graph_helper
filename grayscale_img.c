@@ -5,8 +5,8 @@
 
 #include "grayscale_img.h"
 
-#define COLOR2G8(c) (((((c) & 0xFF00) >> 8) * 253 + 505) >> 10)
-#define COLOR2G4(c) ((((((c) & 0xFF00) >> 8) * 253 + 505) >> 10) >> 4)
+#define COLOR2G8(c) (((c) & 0xFF00) >> 8)
+#define COLOR2G4(c) ((((c) & 0xFF00) >> 8) >> 4)
 
 const uint8_t _LUT4[16] =
 {
@@ -45,7 +45,7 @@ img_t *grayscale_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
     ret->img_type = type;
     ret->width = w & 0xFFFE;  // force to even sized width
     ret->height = h;
-    ret->num_channels = 3;
+    ret->num_channels = 1;
     ret->extra = (void*) NULL;
     ret->data_size = data_size;
     grayscale_img_fill_vtable(ret);
@@ -67,9 +67,10 @@ img_t *grayscale_img_create(img_type_t type, uint16_t w, uint16_t h, uint32_t c)
         free(ret);
         ret = (img_t*)NULL;
     }
+
+    printf("initial color: 0x%02X\n", initial_color);
     memset((void*)ret->data, initial_color, data_size); 
   }
-  printf("got here!\n"); fflush(stdout);
   return ret;
 }
 
