@@ -341,7 +341,7 @@ void img_save_bmp (img_t *pimg, const char *fileName)
   {
     for(y = pimg->height; y > 0; y--)
     {
-      // copy the source data into the rgb888 buffer
+      // copy one raster of the source data into the rgb888 buffer
       img_bit_blt(p_tmp, 0, 0, pimg, 0, y-1, pimg->width, 1);
 
       // write it to disk
