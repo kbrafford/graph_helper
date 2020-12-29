@@ -46,12 +46,14 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
   return ret;
 }
 
-void img_destroy(img_t *pimg)
+void img_destroy(img_t **pimg)
 {
-  if(pimg)
+  if(*pimg)
   {
-    pimg->destroy_func(pimg);
+    (*pimg)->destroy_func(*pimg);
   }
+
+  *pimg = (img_t*)NULL;
 }
 
 
@@ -350,7 +352,7 @@ void img_save_bmp (img_t *pimg, const char *fileName)
 
     fclose(file);
 
-    img_destroy(p_tmp);
+    img_destroy(&p_tmp);
   }
 
   return;
@@ -502,34 +504,59 @@ static uint32_t _SampleBicubic (img_t *pimg, float u, float v)
 }
 
 
-img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree)
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree)
 {
-  img_t      *pdst_img;
+  img_t      *pdst_img, *p_tmp;
   int         x,y;
   uint32_t    sample;
   float       u,v;
+  int         i;
 
-  uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
-  uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
-
-  pdst_img = img_create(new_type, width, height, RGB(0,0,0));
-
-  for (y = 0; y < pdst_img->height; y++)
+  if(!steps)
   {
-    v = ((float)y) / (float)(pdst_img->height - 1);
+    scale = 1.0f;
+    steps = 1;
+  }
 
-    for (x = 0; x < pdst_img->width; x++)
+  for(i = 0; i < steps; i++)
+  {
+    uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
+    uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
+
+    pdst_img = img_create(new_type, width, height, RGB(0,0,0));
+
+    for (y = 0; y < pdst_img->height; y++)
     {
-      u = ((float)x) / (float)(pdst_img->width - 1);
- 
-      if (degree == 0)
-        sample = _SampleNearest(psrc_img, u, v);
-      else if (degree == 1)
-        sample = _SampleLinear(psrc_img, u, v);
-      else if (degree == 2)
-        sample = _SampleBicubic(psrc_img, u, v);
+      v = ((float)y) / (float)(pdst_img->height - 1);
 
-      pdst_img->plot_func(pdst_img, x, y, sample & 0x00FFFFFF);
+      for (x = 0; x < pdst_img->width; x++)
+      {
+        u = ((float)x) / (float)(pdst_img->width - 1);
+  
+        if (degree == 0)
+          sample = _SampleNearest(psrc_img, u, v);
+        else if (degree == 1)
+          sample = _SampleLinear(psrc_img, u, v);
+        else if (degree == 2)
+          sample = _SampleBicubic(psrc_img, u, v);
+
+        pdst_img->plot_func(pdst_img, x, y, sample & 0x00FFFFFF);
+      }
+    }
+
+    /* for the next go-round, the source image will be the
+       destination image we just cretaed */
+    p_tmp = psrc_img;
+    psrc_img = pdst_img;
+
+    /* for the first iteration we leave the source image intact,
+       since that's the one created by the caller. For each other
+       iteration we need to destroy the one we created in the 
+       previous iteration after we are done with it. We return
+       the last one we created */
+    if(i)
+    {
+      img_destroy(&p_tmp);
     }
   }
 

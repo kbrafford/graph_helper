@@ -52,7 +52,7 @@ typedef struct _img_t
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c);
 
-void img_destroy(img_t *pimg);
+void img_destroy(img_t **pimg);
 void img_plot_line(img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint8_t t, uint32_t c);
 void img_plot_line_antialias(img_t *pimg, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, uint32_t c);
 void img_plot_circle(img_t *pimg, uint16_t x0, uint16_t y0, uint16_t radius, uint32_t c);
@@ -62,7 +62,7 @@ void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, u
 void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd, 
                  img_t *psrc_img, uint16_t xs, uint16_t ys, uint16_t width, uint16_t height);
 
-img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree);
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree);
 uint32_t img_save_png(img_t *pimg, const char *fname);
 void img_save_bmp (img_t *pimg, const char *fileName);
 

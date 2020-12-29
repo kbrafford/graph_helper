@@ -10,10 +10,10 @@
 
 //img_type_t type = img_type_p565;
 //img_type_t type = img_type_indexed_palette15;
-//img_type_t type = img_type_indexed_palette255;
+img_type_t type = img_type_indexed_palette255;
 //img_type_t type = img_type_p332;
 //img_type_t type = img_type_grayscale8;
-img_type_t type = img_type_rgb888;
+//img_type_t type = img_type_rgb888;
 
 int main()
 {
@@ -58,26 +58,34 @@ int main()
   img_plot_line(pimg, 3, 3, 250, 250, 7, RGB(64,64, 225));
 
   img_t *pimg_nn, *pimg_bil, *pimg_bic;
-  pimg_nn  = img_resize(img_type_rgb888, pimg, .33, 0);
-  pimg_bil = img_resize(img_type_rgb888, pimg, .33, 1);
-  pimg_bic = img_resize(img_type_rgb888, pimg, .33, 2);
+  img_t *pimg_bil2;
+
+  //pimg_nn  = img_resize(img_type_rgb888, pimg, .75, 3, 0);
+  pimg_bil  = img_resize(img_type_rgb888, pimg, .65, 2, 1);
+  pimg_bil2 = img_resize(img_type_rgb888, pimg, .75, 3, 1);
+
+  //pimg_bic = img_resize(img_type_rgb888, pimg, .75, 3, 2);
 
   img_save_png(pimg, "image.png");
-  img_save_bmp(pimg, "image.bmp");
+  //img_save_bmp(pimg, "image.bmp");
 
-  img_save_png(pimg_nn, "image_nn.png");
+  //img_save_png(pimg_nn, "image_nn.png");
   img_save_png(pimg_bil, "image_bil.png");
-  img_save_png(pimg_bic, "image_bic.png");
+  img_save_png(pimg_bil2, "image_bil2.png");  
+  //img_save_png(pimg_bic, "image_bic.png");
 
   img_dump_stats(pimg,     "Original");
-  img_dump_stats(pimg_nn,  "Nearest Neighbor");
+  //img_dump_stats(pimg_nn,  "Nearest Neighbor");
   img_dump_stats(pimg_bil, "Bilinear");
-  img_dump_stats(pimg_bic, "Bicubic");
+  img_dump_stats(pimg_bil2, "Bilinear 2");
 
-  img_destroy(pimg);
-  img_destroy(pimg_nn);
-  img_destroy(pimg_bil);
-  img_destroy(pimg_bic);
+  //img_dump_stats(pimg_bic, "Bicubic");
+
+  img_destroy(&pimg);
+  //img_destroy(&pimg_nn);
+  img_destroy(&pimg_bil);
+  img_destroy(&pimg_bil2);  
+  //img_destroy(&pimg_bic);
 
   return 0;
 }
