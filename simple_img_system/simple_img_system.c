@@ -6,13 +6,16 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <pthread.h>
 
 #include "simple_img_system.h"
 #include "indexed_palette_img.h"
 #include "p565_img.h"
 #include "grayscale_img.h"
 #include "rgb888_img.h"
+
+#if SIS_NUM_THREADS > 1
+#include <pthread.h>
+#endif
 
 
 img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c)
