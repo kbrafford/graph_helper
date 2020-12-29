@@ -1,7 +1,7 @@
 all : test.exe
 
 LFLAGS :=
-CFLAGS := -O3
+CFLAGS := -O3 -m64
 
 include simple_img_system/makefile
 
