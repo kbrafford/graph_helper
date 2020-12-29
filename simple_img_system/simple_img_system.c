@@ -539,7 +539,7 @@ img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int degree
 
 // FROM: https://rosettacode.org/wiki/Xiaolin_Wu%27s_line_algorithm#C
 
-inline void _dla_changebrightness(uint32_t from, uint32_t *to, float br)
+void _dla_changebrightness(uint32_t from, uint32_t *to, float br)
 {
   typedef union _pixel_t
   {
@@ -560,7 +560,7 @@ inline void _dla_changebrightness(uint32_t from, uint32_t *to, float br)
 
 
 
-inline void _dla_plot(img_t *pimg, int x, int y, uint32_t col, float br)
+void _dla_plot(img_t *pimg, int x, int y, uint32_t col, float br)
 {
   uint32_t oc;
 
