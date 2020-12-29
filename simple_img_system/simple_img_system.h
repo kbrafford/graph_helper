@@ -2,6 +2,8 @@
 #define __SIMPLE_IMG_SYSTEM_H__
 #include <stdint.h>
 
+#define SIS_NUM_THREADS 4
+
 #define _CLAMP(v, min, max) if (v < min) { v = min; } else if (v > max) { v = max; } 
 
 // Interfacing with our uint32_t style pixel

@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #include "simple_img_system.h"
 #include "indexed_palette_img.h"
@@ -503,6 +504,41 @@ static uint32_t _SampleBicubic (img_t *pimg, float u, float v)
     return ret.as_uint32;
 }
 
+typedef struct _worker_thread_t
+{
+  img_t    *pdst_img;
+  img_t    *psrc_img;
+  int       starting_y;
+  int       upper_limit_y;
+  int       degree;
+} worker_thread_t;
+
+static void _img_resize_worker_thread(void *arg)
+{
+  worker_thread_t *my_task = (worker_thread_t*) arg;
+  int      x, y;
+  float    u,v;
+  uint32_t sample;
+
+  for (y = my_task->starting_y; y < my_task->upper_limit_y; y++)
+  {
+    v = ((float)y) / (float)(my_task->pdst_img->height - 1);
+
+    for (x = 0; x < my_task->pdst_img->width; x++)
+    {
+      u = ((float)x) / (float)(my_task->pdst_img->width - 1);
+  
+      if (my_task->degree == 0)
+        sample = _SampleNearest(my_task->psrc_img, u, v);
+      else if (my_task->degree == 1)
+        sample = _SampleLinear(my_task->psrc_img, u, v);
+      else if (my_task->degree == 2)
+        sample = _SampleBicubic(my_task->psrc_img, u, v);
+
+      my_task->pdst_img->plot_func(my_task->pdst_img, x, y, sample & 0x00FFFFFF);
+    }
+  }
+} 
 
 img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree)
 {
@@ -518,6 +554,9 @@ img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps,
     steps = 1;
   }
 
+  /* adjust the scale so we get to the final scale in steps */
+  scale = powf(scale, (1.0f/steps));
+
   for(i = 0; i < steps; i++)
   {
     uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
@@ -525,6 +564,7 @@ img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps,
 
     pdst_img = img_create(new_type, width, height, RGB(0,0,0));
 
+#if SIS_NUM_THREADS == 0 || SIS_NUM_THREADS == 1
     for (y = 0; y < pdst_img->height; y++)
     {
       v = ((float)y) / (float)(pdst_img->height - 1);
@@ -543,6 +583,35 @@ img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps,
         pdst_img->plot_func(pdst_img, x, y, sample & 0x00FFFFFF);
       }
     }
+#else
+    pthread_t thread[SIS_NUM_THREADS];
+    worker_thread_t tinfo[SIS_NUM_THREADS];
+
+    for(y = 0; y < SIS_NUM_THREADS; y++)
+    {
+      tinfo[y].degree = degree;
+      tinfo[y].pdst_img = pdst_img;
+      tinfo[y].psrc_img = psrc_img;
+      tinfo[y].starting_y = y * pdst_img->height / SIS_NUM_THREADS;
+      tinfo[y].upper_limit_y = (y + 1) * pdst_img->height / SIS_NUM_THREADS;
+    }
+
+    /* make sure the last one's limit was exactly the height and wasn't
+       messed up by rounding */
+    tinfo[SIS_NUM_THREADS-1].upper_limit_y = pdst_img->height;
+
+    /* kick them off */
+    for(y = 0; y < SIS_NUM_THREADS; y++)
+    {
+      pthread_create(&thread[y], NULL, _img_resize_worker_thread, (void*)&(tinfo[y]));
+    }
+
+    /* wait for them to complete */
+    for(y = 0; y < SIS_NUM_THREADS; y++)
+    {
+      pthread_join(thread[y], NULL);
+    }
+#endif
 
     /* for the next go-round, the source image will be the
        destination image we just cretaed */
