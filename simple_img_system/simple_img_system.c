@@ -513,7 +513,7 @@ typedef struct _worker_thread_t
   int       degree;
 } worker_thread_t;
 
-static void _img_resize_worker_thread(void *arg)
+static void *_img_resize_worker_thread(void *arg)
 {
   worker_thread_t *my_task = (worker_thread_t*) arg;
   int      x, y;
@@ -538,6 +538,8 @@ static void _img_resize_worker_thread(void *arg)
       my_task->pdst_img->plot_func(my_task->pdst_img, x, y, sample & 0x00FFFFFF);
     }
   }
+
+  return (void*)NULL;
 } 
 
 img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree)
