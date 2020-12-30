@@ -59,24 +59,27 @@ int main()
   img_t *pimg_nn, *pimg_bil, *pimg_bic;
   img_t *pimg_bil2, *pimg_bic2;
 
-  //pimg_nn  = img_resize(img_type_rgb888, pimg, .75, 3, 0);
+  pimg_nn  = img_resize(img_type_rgb888, pimg, 1280, 0, 1, 0);
+
   pimg_bil  = img_resize(img_type_rgb888, pimg, 1280, 0, 2, 1);
   pimg_bil2 = img_resize(img_type_rgb888, pimg, 1280, 0, 3, 1);
-  pimg_bic2 = img_resize(img_type_rgb888, pimg, 1280, 0, 5, 2);
 
-  pimg_bic = img_resize(img_type_rgb888, pimg, 1280, 0, 3, 2);
+  pimg_bic = img_resize(img_type_rgb888, pimg, 1280, 0, 2, 2);
+  pimg_bic2 = img_resize(img_type_rgb888, pimg, 1280, 0, 3, 2);
+
+
 
   img_save_png(pimg, "image.png");
   //img_save_bmp(pimg, "image.bmp");
 
-  //img_save_png(pimg_nn, "image_nn.png");
+  img_save_png(pimg_nn, "image_nn.png");
   img_save_png(pimg_bil, "image_bil.png");
   img_save_png(pimg_bil2, "image_bil2.png");  
   img_save_png(pimg_bic, "image_bic.png");
   img_save_png(pimg_bic2, "image_bic2.png");
 
   img_dump_stats(pimg,     "Original");
-  //img_dump_stats(pimg_nn,  "Nearest Neighbor");
+  img_dump_stats(pimg_nn,  "Nearest Neighbor");
   img_dump_stats(pimg_bil, "Bilinear");
   img_dump_stats(pimg_bil2, "Bilinear 2");
 
@@ -84,7 +87,7 @@ int main()
   img_dump_stats(pimg_bic2, "Bicubic2 2");
 
   img_destroy(&pimg);
-  //img_destroy(&pimg_nn);
+  img_destroy(&pimg_nn);
   img_destroy(&pimg_bil);
   img_destroy(&pimg_bil2);  
   img_destroy(&pimg_bic);
