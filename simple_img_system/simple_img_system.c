@@ -545,27 +545,50 @@ static void *_img_resize_worker_thread(void *arg)
   return (void*)NULL;
 } 
 
-img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree)
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, uint16_t target_w, uint16_t target_h,
+                   int steps, int degree)
 {
   img_t      *pdst_img, *p_tmp;
   int         x,y;
   uint32_t    sample;
-  float       u,v;
+  float       u,v, wscale, hscale;
   int         i;
+  uint16_t    width, height;
+
+  /* calculate the scale based on the target width and height. Target height of 0
+     means use the same scale is for the width (i.e. maintain aspect ratio) */
+  wscale = (float)target_w / psrc_img->width;
+  if(!target_h)
+  {
+    hscale = wscale;
+    target_h = (uint16_t) (psrc_img->height * hscale);
+  }
+  else
+    hscale = (float)target_h / psrc_img->height;
 
   if(!steps)
   {
-    scale = 1.0f;
+    wscale = hscale = 1.0f;
     steps = 1;
   }
 
   /* adjust the scale so we get to the final scale in steps */
-  scale = powf(scale, (1.0f/steps));
+  wscale = powf(wscale, (1.0f/steps));
+  hscale = powf(hscale, (1.0f/steps));
 
   for(i = 0; i < steps; i++)
   {
-    uint16_t width  = (uint16_t) (float)(psrc_img->width)*scale;
-    uint16_t height = (uint16_t) (float)(psrc_img->height)*scale;
+    /* if we are on the last iteration, force the width and height to be precise */
+    if(i == steps-1)
+    {
+      width = target_w;
+      height = target_h;
+    }
+    else
+    {
+      width  = (uint16_t) (float)(psrc_img->width)*wscale;
+      height = (uint16_t) (float)(psrc_img->height)*hscale;
+    }
 
     pdst_img = img_create(new_type, width, height, RGB(0,0,0));
 

@@ -60,11 +60,11 @@ int main()
   img_t *pimg_bil2, *pimg_bic2;
 
   //pimg_nn  = img_resize(img_type_rgb888, pimg, .75, 3, 0);
-  pimg_bil  = img_resize(img_type_rgb888, pimg, 1280.f/3840 + .0001, 2, 1);
-  pimg_bil2 = img_resize(img_type_rgb888, pimg, 1280.f/3840 + .0002, 3, 1);
-  pimg_bic2 = img_resize(img_type_rgb888, pimg, 1280.f/3840 + .0002, 5, 2);
+  pimg_bil  = img_resize(img_type_rgb888, pimg, 1280, 0, 2, 1);
+  pimg_bil2 = img_resize(img_type_rgb888, pimg, 1280, 0, 3, 1);
+  pimg_bic2 = img_resize(img_type_rgb888, pimg, 1280, 0, 5, 2);
 
-  pimg_bic = img_resize(img_type_rgb888, pimg, 1280.f/3840 + .0002, 3, 2);
+  pimg_bic = img_resize(img_type_rgb888, pimg, 1280, 0, 3, 2);
 
   img_save_png(pimg, "image.png");
   //img_save_bmp(pimg, "image.bmp");

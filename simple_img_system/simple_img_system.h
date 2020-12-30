@@ -63,7 +63,9 @@ void img_plot_path(img_t *pimg, img_point_t *ppath, uint16_t count, uint8_t t, u
 void img_bit_blt(img_t *pdst_img, uint16_t xd, uint16_t yd, 
                  img_t *psrc_img, uint16_t xs, uint16_t ys, uint16_t width, uint16_t height);
 
-img_t *img_resize (img_type_t new_type, img_t *psrc_img, float scale, int steps, int degree);
+img_t *img_resize (img_type_t new_type, img_t *psrc_img, uint16_t target_w, uint16_t target_h,
+                   int steps, int degree);
+
 uint32_t img_save_png(img_t *pimg, const char *fname);
 void img_save_bmp (img_t *pimg, const char *fileName);
 
