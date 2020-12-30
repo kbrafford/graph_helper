@@ -39,7 +39,6 @@ int main()
   img_plot_line(pimg, 200,720-200, 1280-200,720-200, 3, RGB(0,0,255));
   img_plot_line(pimg, 200,200, 200,720-200, 3, RGB(0,0,255));
 
-  //img_plot_line_antialias(pimg, 50, 1000, 1900,500, RGB(255,165,0));
   img_plot_line          (pimg, 50,  900, 1900,400, 3, RGB(255,165,0));
 
 

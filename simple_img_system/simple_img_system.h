@@ -56,7 +56,6 @@ img_t *img_create(img_type_t type, uint16_t width, uint16_t height, uint32_t c);
 
 void img_destroy(img_t **pimg);
 void img_plot_line(img_t *pimg, int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint8_t t, uint32_t c);
-void img_plot_line_antialias(img_t *pimg, unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, uint32_t c);
 void img_plot_circle(img_t *pimg, uint16_t x0, uint16_t y0, uint16_t radius, uint32_t c);
 void img_plot_vline(img_t *pimg, int32_t x, int32_t y0, int32_t y1, uint8_t t, uint32_t c);
 void img_plot_hline(img_t *pimg, int32_t x0, int32_t x1, int32_t y, uint8_t t, uint32_t c);
